@@ -1,0 +1,26 @@
+<!doctype html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Thor</title>
+  <!-- import scss stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /*hide default checkboxes.. workaround for now*/
+    input[type=checkbox] {
+      position: absolute;
+      opacity: 0;
+    }
+
+  </style>
+
+  <body>
+    <script src="build/elm.js"></script>
+    <script>
+      var app = Elm.Main.fullscreen();
+      // app.ports.toJs.subscribe(function(str) {
+      //   alert(str);
+      // });
+    </script>
+  </body>
+  </html>
