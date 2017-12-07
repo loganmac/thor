@@ -1,0 +1,22 @@
+{
+  "name": "thor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server/api.js",
+  "devDependencies": {
+    "json-server": "^0.12.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loganmac/thor.git"
+  },
+  "author": "Logan McPhail <logan@nanobox.io>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/loganmac/thor/issues"
+  },
+  "homepage": "https://github.com/loganmac/thor#readme"
+}

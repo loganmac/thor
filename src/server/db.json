@@ -1,0 +1,33 @@
+{
+  "apps": [{
+    "id": "c3bff5fd-ce3e-4bfb-8ecc-f43714a3fc44",
+    "name": "sneaky-squirrel",
+    "timezone": "UTC",
+    "state": "active",
+    "auto_reconfigure": false,
+    "config": null,
+    "provider_id": "711714ac-737c-4e23-af73-d598431a0696",
+    "provider_name": "Amazon Web Services",
+    "provider_icon": "aws",
+    "provider_endpoint": null,
+    "platform_id": "d1ebdc90-22a0-4fc7-9ee7-0127260f8600",
+    "platform_region": "Us-west-1",
+    "group_id": "30bce79d-9e19-4b65-9555-5050746abada",
+    "group_name": "Group 1"
+  }, {
+    "id": "3f03e1b7-01f1-431e-9ad1-13b3fd6077ef",
+    "name": "valuable-vole",
+    "timezone": "UTC",
+    "state": "active",
+    "auto_reconfigure": false,
+    "config": null,
+    "provider_id": "644ee1c8-722e-46a7-b29d-cab338c4b58e",
+    "provider_name": "DigitalOcean",
+    "provider_icon": "digital-ocean",
+    "provider_endpoint": null,
+    "platform_id": "0332ec84-547c-4021-80c5-5e923423015d",
+    "platform_region": "sfo2",
+    "group_id": "644ee1c8-722e-46a7-b29d-cab338c4b58e",
+    "group_name": "Group 2"
+  }]
+}

@@ -4,6 +4,11 @@ SRC = src/elm/Main.ELM
 
 all: install live
 
+api:
+	@echo "Setting up mock API server..."
+	@json-server --watch src/server/db.json || \
+	npm install -g json-server && json-server --watch src/server/db.json
+
 build:
 	elm-make $(SRC) --output=$(OUTPUT)
 

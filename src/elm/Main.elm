@@ -1,19 +1,113 @@
 module Main exposing (..)
 
--- import Html.Attributes exposing (..)
+-- import Html.Events exposing (onClick)
 
-import Html exposing (Html, br, div, p, text)
-import Html.Attributes exposing (class)
-import Lexi.Simple.Checkbox as SimpleCheckbox
-import Lexi.Styled.Checkbox as StyledCheckbox
-import Lexi.Styled.Label as StyledLabel
+import Html exposing (Html, br, div, h1, h2, p, text)
+import Html.Attributes exposing (class, id, style)
 import Page.AppAdmin as AppAdmin
-import Page.Core.Corral as Corral
+import Page.Core.ClobberBox as ClobberBox
 import Page.Core.TopNav as TopNav
 
 
--- import Http
--- import Json.Decode as Decode
+-- TYPES
+
+
+type Page
+    = Blank
+    | NotFound
+    | Dashboard
+    | AppDash
+    | AppLogs
+    | AppHistory
+    | AppNetwork
+    | AppConfig
+    | AppAdmin
+    | AccountAdmin
+    | TeamAdmin
+
+
+type PageState
+    = Loaded Page
+    | TransitioningFrom Page
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { appAdmin : AppAdmin.Model
+    , accountMenuOpen : Bool
+    , clobberBox : ClobberBox.Model
+    }
+
+
+init : ( Model, Cmd Msg )
+init =
+    let
+        ( appAdmininit, appAdminCmd ) =
+            AppAdmin.init
+    in
+    ( { appAdmin = appAdmininit
+      , accountMenuOpen = False
+      , clobberBox = ClobberBox.init
+      }
+    , Cmd.batch [ Cmd.map AppAdminMsg appAdminCmd ]
+    )
+
+
+
+-- UPDATE
+
+
+type Msg
+    = AppAdminMsg AppAdmin.Msg
+    | ClickOutside
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        AppAdminMsg subMsg ->
+            let
+                ( updatedAppAdmin, appAdminCmd ) =
+                    AppAdmin.update subMsg model.appAdmin
+            in
+            ( { model | appAdmin = updatedAppAdmin }, Cmd.map AppAdminMsg appAdminCmd )
+
+        ClickOutside ->
+            ( { model | accountMenuOpen = False }, Cmd.none )
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+    div [ class "main" ]
+        [ TopNav.view
+
+        --
+        -- -- Clobber box below
+        -- , div
+        --     [ class "layout", id "dashbaord-layout" ]
+        --     [ div [ class "layout-header" ] []
+        --     , div [ class "layout-container", id "apps-dash" ]
+        --         [ div [ class "columns col_left eight" ]
+        --             [ div [ class "row", id "service-index" ]
+        --                 [ h2 [] [ text "Service-specific Server Names" ]
+        --                 , div [ id "valkrie" ]
+        --                     [ div [ class "boxes" ]
+        --                         [ ClobberBox.view model.clobberBox (\_ -> ClickOutside) (text "")
+        --                         ]
+        --                     ]
+        --                 ]
+        --             ]
+        --         ]
+        --     ]
+        , Html.map AppAdminMsg (AppAdmin.view model.appAdmin)
+        ]
 
 
 main : Program Never Model Msg
@@ -26,86 +120,17 @@ main =
         }
 
 
-type alias Model =
-    { corral : Corral.Model
-    , isTesting : Bool
-    }
 
-
-init : ( Model, Cmd Msg )
-init =
-    ( { corral =
-            { title = "App Admin"
-            , nav = [ "Info", "Ownership", "Deploy", "Update", "Security", "Delete" ]
-            , value = "App Admin"
-            , activeItem = ""
-            }
-      , isTesting = False
-      }
-    , Cmd.none
-    )
-
-
-type Msg
-    = CorralItemClicked String
-    | CheckedTesting
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ corral } as model) =
-    case msg of
-        CorralItemClicked str ->
-            let
-                updatedCorral =
-                    { corral | activeItem = str }
-            in
-            ( { model | corral = updatedCorral }, Cmd.none )
-
-        CheckedTesting ->
-            ( { model | isTesting = not model.isTesting }, Cmd.none )
-
-
-view : Model -> Html Msg
-view model =
-    div [ class "main" ]
-        [ TopNav.view (text "")
-        , AppAdmin.view CorralItemClicked model.corral
-        , div [ class "holder lexi" ]
-            [ div [ class "checkboxes" ]
-                [ StyledCheckbox.checkbox
-                    { msg = CheckedTesting
-                    , isChecked = model.isTesting
-                    , labelPosition = StyledCheckbox.LabelBefore
-                    , label = StyledLabel.lightLabel [ text "Light, with a label before, styled like a vue component" ]
-                    , theme = StyledCheckbox.Light
-                    }
-                , br [] []
-                , div [ class "lexi lexi-blue" ]
-                    [ StyledCheckbox.checkbox
-                        { msg = CheckedTesting
-                        , isChecked = model.isTesting
-                        , labelPosition = StyledCheckbox.LabelAfter
-                        , label = StyledLabel.lightLabel [ text "Dark, with a label after, styled like a vue component" ]
-                        , theme = StyledCheckbox.Dark
-                        }
-                    ]
-                , br [] []
-                , div [ class "lexi" ]
-                    [ SimpleCheckbox.checkbox
-                        { msg = CheckedTesting
-                        , isChecked = model.isTesting
-                        , labelPosition = SimpleCheckbox.LabelBefore
-                        , text = "Light, with a label before, styled with scss and class names"
-                        }
-                    ]
-                , div [ class "lexi lexi-blue" ]
-                    [ SimpleCheckbox.checkbox
-                        { msg = CheckedTesting
-                        , isChecked = model.isTesting
-                        , labelPosition = SimpleCheckbox.LabelAfter
-                        , text = "Dark, with a label after, styled with scss and class names"
-                        }
-                    ]
-                ]
-            ]
-        ]
+-- BACKDROP
+-- div
+--     [ class "backdrop"
+--     , style
+--         [ ( "position", "relative" )
+--         , ( "top", "0" )
+--         , ( "z-index", "1" )
+--         , ( "width", "100%" )
+--         , ( "height", "100%" )
+--         ]
+--     , onClick ClickOutside
+--     ]
+--     [ ]

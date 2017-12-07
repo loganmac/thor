@@ -3,3 +3,4 @@ elm-stuff
 dist
 elm.js
 build
+node_modules
