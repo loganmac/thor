@@ -7,11 +7,70 @@
   <link rel="stylesheet" href="style.css">
   <style>
     /*hide default checkboxes.. workaround for now*/
+
     input[type=checkbox] {
       position: absolute;
       opacity: 0;
     }
 
+    .tab-links {
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      padding-left: 0;
+      margin-bottom: 0;
+      list-style: none;
+      border-bottom: 1px solid #ddd;
+
+    }
+
+    .tab-link {
+      -webkit-box-flex: 1;
+      -webkit-flex : 1 1 100%;
+      -ms-flex : 1 1 100%;
+      flex : 1 1 100%;
+      text-align: center;
+      margin-bottom: -1px;
+      border: 1px solid transparent;
+      border-top-right-radius: .25rem;
+      border-top-left-radius: .25rem;
+      display: block;
+      padding: .5em 1em;
+    }
+
+    .tab-link.active {
+      color: #464a4c;
+      background-color: #fff;
+      border-color: #ddd #ddd #fff;
+    }
+
+    .tab-pane {
+      animation-duration: 1s;
+      animation-name: slidein;
+    }
+    75% {
+      font-size: 300%;
+      margin-left: 25%;
+      width: 150%;
+    }
+    @keyframes slidein {
+      from {
+        opacity: 0;
+        width: 300%;
+      }
+
+      75% {
+        font-size: 300%;
+        margin-left: 25%;
+        width: 150%;
+      }
+
+      to {
+        opacity: 1%;
+        width: 100%;
+      }
+    }
   </style>
 
   <body>
@@ -23,4 +82,5 @@
       // });
     </script>
   </body>
+
   </html>
