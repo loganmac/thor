@@ -93,7 +93,7 @@ viewLink activeTabId model toMsg currentTab =
     in
     li
         [ classList [ ( "tab-link", True ), ( "active", isActive ) ]
-        , onClick <| clickHandler (Just currentTab.id) toMsg model
+        , onClick <| clickHandler currentTab.id toMsg model
         ]
         [ a
             ([ href <| "#" ++ currentTab.id ]
@@ -119,9 +119,24 @@ viewPane activeTabId model currentTab =
         currentTab.pane.children
 
 
-clickHandler : Maybe String -> (Model -> msg) -> Model -> msg
-clickHandler activeId toMsg model =
-    toMsg { model | activeTab = activeId }
+clickHandler : String -> (Model -> msg) -> Model -> msg
+clickHandler tabId toMsg model =
+    toMsg { model | activeTab = Just tabId }
+
+
+updateTabs : Model -> List Model -> List Model
+updateTabs model modelList =
+    if List.any (\a -> a.id == model.id) modelList then
+        List.map
+            (\a ->
+                if a.id == model.id then
+                    model
+                else
+                    a
+            )
+            modelList
+    else
+        model :: modelList
 
 
 {-| Create a composable tab

@@ -55,7 +55,10 @@ init =
       , appDash = appDashinit
       , accountMenuOpen = False
       }
-    , Cmd.batch [ Cmd.map AppAdminMsg appAdminCmd ]
+    , Cmd.batch
+        [ Cmd.map AppAdminMsg appAdminCmd
+        , Cmd.map AppDashMsg appDashCmd
+        ]
     )
 
 
@@ -91,6 +94,12 @@ update msg model =
 
 
 
+-- SUBSCRIPTIONS
+--
+-- subscriptions : Model -> Sub Msg
+-- subscriptions model =
+--     Sub.batch [ Sub.map AppDashMsg (AppDash.subscriptions model.appDash) ]
+--
 -- VIEW
 
 
@@ -109,7 +118,7 @@ main =
     Html.program
         { init = init
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = always Sub.none
         , view = view
         }
 
