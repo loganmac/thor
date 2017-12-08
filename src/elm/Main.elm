@@ -2,10 +2,10 @@ module Main exposing (..)
 
 -- import Html.Events exposing (onClick)
 
-import Html exposing (Html, br, div, h1, h2, p, text)
+import Html exposing (Html, br, div, h1, h2, header, p, text)
 import Html.Attributes exposing (class, id, style)
 import Page.AppAdmin as AppAdmin
-import Page.Core.ClobberBox as ClobberBox
+import Page.AppDash as AppDash
 import Page.Core.TopNav as TopNav
 
 
@@ -38,7 +38,7 @@ type PageState
 type alias Model =
     { appAdmin : AppAdmin.Model
     , accountMenuOpen : Bool
-    , clobberBox : ClobberBox.Model
+    , appDash : AppDash.Model
     }
 
 
@@ -47,10 +47,13 @@ init =
     let
         ( appAdmininit, appAdminCmd ) =
             AppAdmin.init
+
+        ( appDashinit, appDashCmd ) =
+            AppDash.init
     in
     ( { appAdmin = appAdmininit
+      , appDash = appDashinit
       , accountMenuOpen = False
-      , clobberBox = ClobberBox.init
       }
     , Cmd.batch [ Cmd.map AppAdminMsg appAdminCmd ]
     )
@@ -62,6 +65,7 @@ init =
 
 type Msg
     = AppAdminMsg AppAdmin.Msg
+    | AppDashMsg AppDash.Msg
     | ClickOutside
 
 
@@ -75,6 +79,13 @@ update msg model =
             in
             ( { model | appAdmin = updatedAppAdmin }, Cmd.map AppAdminMsg appAdminCmd )
 
+        AppDashMsg subMsg ->
+            let
+                ( updatedAppDash, appDashCmd ) =
+                    AppDash.update subMsg model.appDash
+            in
+            ( { model | appDash = updatedAppDash }, Cmd.map AppDashMsg appDashCmd )
+
         ClickOutside ->
             ( { model | accountMenuOpen = False }, Cmd.none )
 
@@ -87,26 +98,9 @@ view : Model -> Html Msg
 view model =
     div [ class "main" ]
         [ TopNav.view
+        , Html.map AppDashMsg (AppDash.view model.appDash)
 
-        --
-        -- -- Clobber box below
-        -- , div
-        --     [ class "layout", id "dashbaord-layout" ]
-        --     [ div [ class "layout-header" ] []
-        --     , div [ class "layout-container", id "apps-dash" ]
-        --         [ div [ class "columns col_left eight" ]
-        --             [ div [ class "row", id "service-index" ]
-        --                 [ h2 [] [ text "Service-specific Server Names" ]
-        --                 , div [ id "valkrie" ]
-        --                     [ div [ class "boxes" ]
-        --                         [ ClobberBox.view model.clobberBox (\_ -> ClickOutside) (text "")
-        --                         ]
-        --                     ]
-        --                 ]
-        --             ]
-        --         ]
-        --     ]
-        , Html.map AppAdminMsg (AppAdmin.view model.appAdmin)
+        -- , Html.map AppAdminMsg (AppAdmin.view model.appAdmin)
         ]
 
 
