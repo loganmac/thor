@@ -7,7 +7,7 @@
     "auto_reconfigure": false,
     "config": null,
     "provider_id": "711714ac-737c-4e23-af73-d598431a0696",
-    "provider_name": "Amazon Web Services",
+    "provider_name": "Heroku",
     "provider_icon": "aws",
     "provider_endpoint": null,
     "platform_id": "d1ebdc90-22a0-4fc7-9ee7-0127260f8600",

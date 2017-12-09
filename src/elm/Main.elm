@@ -45,14 +45,14 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     let
-        ( appAdmininit, appAdminCmd ) =
+        ( appAdminInitialModel, appAdminCmd ) =
             AppAdmin.init
 
-        ( appDashinit, appDashCmd ) =
+        ( appDashInitialModel, appDashCmd ) =
             AppDash.init
     in
-    ( { appAdmin = appAdmininit
-      , appDash = appDashinit
+    ( { appAdmin = appAdminInitialModel
+      , appDash = appDashInitialModel
       , accountMenuOpen = False
       }
     , Cmd.batch
@@ -60,6 +60,15 @@ init =
         , Cmd.map AppDashMsg appDashCmd
         ]
     )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch [ Sub.map AppDashMsg (AppDash.subscriptions model.appDash) ]
 
 
 
@@ -94,12 +103,6 @@ update msg model =
 
 
 
--- SUBSCRIPTIONS
---
--- subscriptions : Model -> Sub Msg
--- subscriptions model =
---     Sub.batch [ Sub.map AppDashMsg (AppDash.subscriptions model.appDash) ]
---
 -- VIEW
 
 
@@ -121,19 +124,3 @@ main =
         , subscriptions = always Sub.none
         , view = view
         }
-
-
-
--- BACKDROP
--- div
---     [ class "backdrop"
---     , style
---         [ ( "position", "relative" )
---         , ( "top", "0" )
---         , ( "z-index", "1" )
---         , ( "width", "100%" )
---         , ( "height", "100%" )
---         ]
---     , onClick ClickOutside
---     ]
---     [ ]

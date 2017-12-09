@@ -6,32 +6,38 @@
   <!-- import scss stylesheet -->
   <link rel="stylesheet" href="style.css">
   <style>
-    /*hide default checkboxes.. workaround for now*/
-
-    input[type=checkbox] {
-      position: absolute;
-      opacity: 0;
+    /********
+    **BLOCKS*
+    *********
+    *These are for displaying items of different heights*/
+    .small-block {
+      min-height: 100px;
+      background-color: #74DBB7;
+    }
+    .medium-block {
+      min-height: 200px;
+      background-color: #FDE19C;
+    }
+    .huge-block {
+      min-height: 300px;
+      background-color: #45B7C2;
     }
 
+    /*************
+    ** TAB LINKS *
+    **************
+    * Just CSS to make the tab link elements look pretty :) */
     .tab-links {
-      display: -webkit-box;
-      display: -webkit-flex;
-      display: -ms-flexbox;
       display: flex;
       padding-left: 0;
       margin-bottom: 0;
       list-style: none;
       border-bottom: 1px solid #ddd;
-
     }
 
     .tab-link {
-      -webkit-box-flex: 1;
-      -webkit-flex : 1 1 100%;
-      -ms-flex : 1 1 100%;
       flex : 1 1 100%;
       text-align: center;
-      margin-bottom: -1px;
       border: 1px solid transparent;
       border-top-right-radius: .25rem;
       border-top-left-radius: .25rem;
@@ -45,51 +51,74 @@
       border-color: #ddd #ddd #fff;
     }
 
+    /**************
+    ** Tab Panes **
+    ***************
+    * This is where most of the magic happens..
+    * animations and stuff to make the
+    * tab panes grow and shrink.                */
+    .tab-panes.active{
+      border: 6px solid #385265;
+    }
+
     .tab-pane {
-      animation-duration: 1s;
-      animation-name: slidein;
+      overflow: hidden;
+      opactiy: 0;
     }
-    75% {
-      font-size: 300%;
-      margin-left: 25%;
-      width: 150%;
+
+    .tab-pane.hidden {
+      /*display: none;*/
     }
-    @keyframes slidein {
-      from {
-        opacity: 0;
-        width: 300%;
-      }
 
-      75% {
-        font-size: 300%;
-        margin-left: 25%;
-        width: 150%;
-      }
+    /************************
+    ** Animation Keyframes **
+    *************************
+    * This tells the browser the timing of animations */
+    @keyframes fadeIn {
+      0% {opacity: 0;}
+      100% {opacity: 1;}
+    }
 
-      to {
-        opacity: 1%;
-        width: 100%;
-      }
+    @keyframes delayedFadeIn {
+      0% {opacity: 0;}
+      33% {opacity: 0;}
+      100% {opacity: 1;}
+    }
+
+    @keyframes fadeOut {
+      0% {opacity: 1;}
+      100% {opacity: 0;}
+    }
+
+    .body {
+      height: 100%
     }
   </style>
 
   <body>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
     <script src="build/elm.js"></script>
     <script>
       var app = Elm.Main.fullscreen();
+      // app.ports.animateChangeTab.subscribe(function() {
+      //     var activeTab = $('.tab-pane.active')
+      //     var previousTab = $('.tab-pane.previous')
+      //     previousTab.velocity("fadeOut", {duration: 1500})
+      //     activeTab.velocity("fadeIn", {duration: 1500})
+      // })
+      // // Generate a uuidv4
+      // function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
+      //
+      // app.ports.generateUuid.subscribe(function() {
+      //   var u = uuid('');
+      //   console.log(u)
+      //   app.ports.uuid.send(u);
+      // });
 
-      // Generate a uuidv4
-      function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
-
-      app.ports.generateUuid.subscribe(function() {
-        var u = uuid('');
-        console.log(u)
-        app.ports.uuid.send(u);
-      });
       // app.ports.toJs.subscribe(function(str) {
       //   alert(str);
       // });
     </script>
   </body>
-
   </html>

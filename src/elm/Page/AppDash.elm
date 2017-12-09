@@ -2,18 +2,32 @@ module Page.AppDash exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h2, header, label, text)
 import Html.Attributes exposing (class, disabled, id, placeholder, style)
-import Page.Core.Tabs as Tabs
-import Ports
+import Page.Core.TabContainer as TabContainer
 
 
 type alias Model =
-    { tabs : List Tabs.Model
+    { tabContainers : List TabContainer.Model
     }
 
 
 init : ( Model, Cmd msg )
 init =
-    ( { tabs = [] }, Cmd.none )
+    ( { tabContainers = [] }, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+-- as you can see, you have to specifically wire up every subscription for a tabContainer
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Sub.map (TabContainerMsg "1")
+            (TabContainer.subscriptions
+                (TabContainer.findTabContainer "1" model.tabContainers)
+            )
+        ]
 
 
 
@@ -21,22 +35,27 @@ init =
 
 
 type Msg
-    = TabsMsg Tabs.Model
+    = TabContainerMsg TabContainer.Id TabContainer.Msg
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TabsMsg tabsModel ->
-            ( { model | tabs = Tabs.updateTabs tabsModel model.tabs }, Cmd.none )
+        TabContainerMsg containerId subMsg ->
+            let
+                ( updatedTabContainer, tabContainerCmd ) =
+                    TabContainer.update subMsg
+                        (TabContainer.findTabContainer containerId model.tabContainers)
+            in
+            ( { model
+                | tabContainers =
+                    TabContainer.updateTabContainer updatedTabContainer model.tabContainers
+              }
+            , Cmd.map (TabContainerMsg containerId) tabContainerCmd
+            )
 
 
 
--- SUBSCRIPTIONS
---
--- subscriptions : Model -> Sub Msg
--- subscriptions model =
---     Ports.uuid NewId
 -- VIEW
 
 
@@ -51,7 +70,7 @@ view model =
                 [ div [ class "columns col_left eight" ]
                     [ h2 [] [ text "Service-specific Server Names" ]
                     , div [ class "boxes" ]
-                        [ topTabs "1" model TabsMsg
+                        [ Html.map (TabContainerMsg "container1") (tabs "container1" model)
                         ]
                     ]
                 ]
@@ -59,67 +78,47 @@ view model =
         ]
 
 
-topTabs : String -> Model -> (Tabs.Model -> msg) -> Html msg
-topTabs id model toMsg =
-    Tabs.view (Tabs.findTabs id model.tabs)
-        toMsg
-        [ Tabs.tab []
+tabs : String -> Model -> Html TabContainer.Msg
+tabs id model =
+    TabContainer.view (TabContainer.findTabContainer id model.tabContainers)
+        TabContainer.FadeOut
+        [ TabContainer.tab []
             { id = "item1"
-            , link = Tabs.link [] [ text "Tab 1" ]
-            , pane = Tabs.pane [] [ innerTabs "2" model toMsg ]
+            , link = TabContainer.link [] [ text "Tab 1" ]
+            , pane = TabContainer.pane [] [ div [ class "medium-block" ] [] ]
             }
-        , Tabs.tab []
+        , TabContainer.tab []
             { id = "item2"
-            , link = Tabs.link [] [ text "Tab 2" ]
-            , pane = Tabs.pane [] [ innerTabs "3" model toMsg ]
+            , link = TabContainer.link [] [ text "Tab 2" ]
+            , pane = TabContainer.pane [] [ div [ class "huge-block" ] [] ]
+            }
+        , TabContainer.tab []
+            { id = "item3"
+            , link = TabContainer.link [] [ text "Tab 3" ]
+
+            -- , pane = Tabs.pane [] [ div [ class "small-block" ] [] ]
+            , pane = TabContainer.pane [ class "small-block" ] [ tabs2 "container2" model ]
             }
         ]
 
 
-innerTabs : String -> Model -> (Tabs.Model -> msg) -> Html msg
-innerTabs id model toMsg =
-    Tabs.view (Tabs.findTabs id model.tabs)
-        toMsg
-        [ Tabs.tab []
+tabs2 : String -> Model -> Html TabContainer.Msg
+tabs2 id model =
+    TabContainer.view (TabContainer.findTabContainer id model.tabContainers)
+        TabContainer.FadeOut
+        [ TabContainer.tab []
             { id = "item1"
-            , link = Tabs.link [] [ text "Tab 1" ]
-            , pane = Tabs.pane [] [ innermostTabs "4" model toMsg ]
+            , link = TabContainer.link [] [ text "Tab 1" ]
+            , pane = TabContainer.pane [] [ div [ class "medium-block" ] [] ]
             }
-        , Tabs.tab []
+        , TabContainer.tab []
             { id = "item2"
-            , link = Tabs.link [] [ text "Tab 2" ]
-            , pane = Tabs.pane [] [ innermostTabs "5" model toMsg ]
+            , link = TabContainer.link [] [ text "Tab 2" ]
+            , pane = TabContainer.pane [] [ div [ class "huge-block" ] [] ]
             }
-        , Tabs.tab []
+        , TabContainer.tab []
             { id = "item3"
-            , link = Tabs.link [] [ text "Tab 3" ]
-            , pane = Tabs.pane [] [ innermostTabs "6" model toMsg ]
-            }
-        ]
-
-
-innermostTabs : String -> Model -> (Tabs.Model -> msg) -> Html msg
-innermostTabs id model toMsg =
-    Tabs.view (Tabs.findTabs id model.tabs)
-        toMsg
-        [ Tabs.tab []
-            { id = "item1"
-            , link = Tabs.link [] [ text "Tab 1" ]
-            , pane = Tabs.pane [] [ h1 [] [ text "Tab 1 Content" ] ]
-            }
-        , Tabs.tab []
-            { id = "item2"
-            , link = Tabs.link [] [ text "Tab 2" ]
-            , pane = Tabs.pane [] [ h1 [] [ text "Tab 2 Content" ] ]
-            }
-        , Tabs.tab []
-            { id = "item3"
-            , link = Tabs.link [] [ text "Tab 3" ]
-            , pane = Tabs.pane [] [ h1 [] [ text "Tab 3 Content" ] ]
-            }
-        , Tabs.tab []
-            { id = "item4"
-            , link = Tabs.link [] [ text "Tab 4" ]
-            , pane = Tabs.pane [] [ h1 [] [ text "Tab 4 Content" ] ]
+            , link = TabContainer.link [] [ text "Tab 3" ]
+            , pane = TabContainer.pane [] [ div [ class "small-block" ] [] ]
             }
         ]
