@@ -93,7 +93,7 @@ type Msg
     | Animate Model Animation.Msg
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeOut newModel ->
@@ -117,7 +117,7 @@ update msg model =
                     Animation.Messenger.update animMsg tabContainerModel.style
             in
             ( { tabContainerModel | style = newStyle }
-            , Cmd.none
+            , animCmd
             )
 
 
