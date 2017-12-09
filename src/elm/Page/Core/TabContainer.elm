@@ -109,16 +109,14 @@ update msg model =
             )
 
         Active newModel ->
-            ( newModel, Cmd.none )
+            ( Debug.log "start" newModel, Cmd.none )
 
         Animate tabContainerModel animMsg ->
             let
                 ( newStyle, animCmd ) =
                     Animation.Messenger.update animMsg tabContainerModel.style
             in
-            ( { tabContainerModel | style = newStyle }
-            , animCmd
-            )
+            ( { tabContainerModel | style = newStyle }, animCmd )
 
 
 
@@ -146,9 +144,7 @@ viewLink model toMsg currentTab =
         , onClick <| clickHandler currentTab.id toMsg model
         ]
         [ a
-            ([ href <| "#" ++ currentTab.id ]
-                ++ currentTab.link.attributes
-            )
+            ([ href <| "#" ++ currentTab.id ] ++ currentTab.link.attributes)
             currentTab.link.children
         ]
 
