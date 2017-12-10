@@ -48,7 +48,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         TabContainerMsg containerId subMsg ->
             let
                 ( updated, cmd ) =
@@ -92,7 +92,7 @@ view model =
 
 tabContainer : Model -> Html Msg
 tabContainer model =
-    tabs "container1" (Debug.log "model" model)
+    tabs "container1" model
         |> Html.map (TabContainerMsg "container1")
 
 

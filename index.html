@@ -60,7 +60,7 @@
     * tab panes grow and shrink.                */
     .tab-panes {
       position: relative;
-      transition: height .7s cubic-bezier(0.86, 0, 0.07, 1) .5s;
+      transition: height .7s cubic-bezier(0.86, 0, 0.07, 1) .3s;
       background-color: #E9EDF0;
     }
     .tab-panes.active{
@@ -76,15 +76,13 @@
       opacity: 0;
     }
 
-    .tab-pane.fade-in{
-      animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1) .5s;
-    }
-
     .tab-pane.fade-out{
-      animation: fadeOut 1s cubic-bezier(0.86, 0, 0.07, 1);
+      animation: fadeOut .7s cubic-bezier(0.86, 0, 0.07, 1);
     }
 
     .tab-pane.active{
+      position: block;
+      animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
       opacity: 1;
     }
 

@@ -349,7 +349,7 @@ subMsg id msg =
 -}
 wait : msg -> Cmd msg
 wait msg =
-    Process.sleep (Time.second * 1.5) |> Task.perform (\_ -> msg)
+    Process.sleep (Time.second * 0.7) |> Task.perform (\_ -> msg)
 
 
 {-| helper function to sequence another message from inside of an update
