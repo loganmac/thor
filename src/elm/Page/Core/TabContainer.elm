@@ -4,14 +4,46 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html, a, div, li, text, ul)
 import Html.Attributes exposing (class, classList, href, id, style)
 import Html.Events exposing (onClick)
-import Maybe.Extra
+import Maybe.Extra exposing (isJust)
 import Process
 import Task
 import Time exposing (Time, millisecond)
 
 
 -- TYPES
--- these first aliases are gross I know, FIXME: later
+
+
+{-| A tab is the combination of a link and a pane,
+with an identifier to link them together
+-}
+type alias Tab msg =
+    { attributes : List (Attribute msg)
+    , id : String
+    , link : Link msg
+    , pane : Pane msg
+    }
+
+
+{-| A link is the interactive 'tabs' that control the state of the container
+-}
+type alias Link msg =
+    { attributes : List (Html.Attribute msg)
+    , children : List (Html.Html msg)
+    }
+
+
+{-| A pane is the inner content of the container, one per tab
+-}
+type alias Pane msg =
+    { attributes : List (Html.Attribute msg)
+    , children : List (Html.Html msg)
+    }
+
+
+{-| A utility type to describe a transition msg
+-}
+type alias TransitionMsg msg =
+    Id -> TabId -> msg
 
 
 type alias Id =
@@ -24,30 +56,6 @@ type alias TabId =
 
 type alias Height =
     Int
-
-
-type alias Tab msg =
-    { attributes : List (Attribute msg)
-    , id : String
-    , link : Link msg
-    , pane : Pane msg
-    }
-
-
-type alias Link msg =
-    { attributes : List (Html.Attribute msg)
-    , children : List (Html.Html msg)
-    }
-
-
-type alias Pane msg =
-    { attributes : List (Html.Attribute msg)
-    , children : List (Html.Html msg)
-    }
-
-
-type alias ToMsg msg =
-    Id -> TabId -> msg
 
 
 
@@ -66,7 +74,7 @@ type Model
         }
 
 
-{-| Use this function to create the inital state for the tabs control
+{-| Use this to create the inital state for the container
 -}
 init : String -> ( String, Model )
 init id =
@@ -106,6 +114,10 @@ port newTabHeight : ({ id : Id, tabId : TabId, height : Height } -> msg) -> Sub 
 -- SUBSCRIPTIONS
 
 
+{-| Remember to wire these up in the parent subscription function.
+It's pretty much the exact same pattern as this library,
+but just don't cons on the newTabHeight for non-container parents.
+-}
 subscriptions : Model -> Sub Msg
 subscriptions (Model model) =
     Sub.batch <| newTabHeight NewTabHeight :: List.map mapSub (Dict.toList model.containers)
@@ -134,8 +146,11 @@ type Msg
 
   FadeOut => NewTabHeight => FadeIn
   FadeOut ->
-    set the clicked tab to fadingIn, set the activeTab to fading out
+    set the activeTab to nothing
+    set the clicked tab to fadingIn
+    set the activeTab to fading out
     set isAnimating to true (to debounce)
+    clear out the state of any subcontainers
     call out to port to measure the height of the tab that was just clicked.
   NewTabHeight ->
     this is received from a port, the callback after we told JS to measure a tab.
@@ -170,8 +185,7 @@ update msg (Model model) =
             -- here we check if the new tab belongs to this element,
             -- since it is registered for messages through subscriptions
             if id == model.id then
-                ( Model { model | height = height }, after (Time.second * 1.5) FadeIn )
-                -- ( { model | height = height }, send FadeIn )
+                ( Model { model | height = height }, wait FadeIn )
             else
                 ( Model model, Cmd.none )
 
@@ -188,15 +202,12 @@ update msg (Model model) =
 
         SubcontainerMsg containerId subMsg ->
             let
-                ( updatedTabContainer, tabContainerCmd ) =
-                    update subMsg <| findTabContainer containerId model.containers
+                ( updated, cmd ) =
+                    update subMsg (get containerId model.containers)
             in
             ( Model
-                { model
-                    | containers =
-                        updateTabContainer updatedTabContainer model.containers
-                }
-            , Cmd.map (SubcontainerMsg containerId) tabContainerCmd
+                { model | containers = set updated model.containers }
+            , Cmd.map (SubcontainerMsg containerId) cmd
             )
 
 
@@ -204,9 +215,12 @@ update msg (Model model) =
 -- VIEW
 
 
+{-| Call this to create a container, passing in a model, a transition message,
+and a list of tab elements
+-}
 view : Model -> (Id -> TabId -> msg) -> List (Tab msg) -> Html msg
 view model toMsg tabs =
-    div []
+    div [ class "tab-container" ]
         [ ul [ class "tab-links" ] (List.map (viewLink model toMsg) tabs)
         , viewPaneContainer model tabs
         ]
@@ -237,7 +251,7 @@ viewPaneContainer (Model model) tabs =
         [ id model.id
         , classList
             [ ( "tab-panes", True )
-            , ( "active", Maybe.Extra.isJust model.activeTab || Maybe.Extra.isJust model.fadeInTab )
+            , ( "active", isJust model.activeTab || isJust model.fadeInTab )
             ]
         , style [ ( "height", toString model.height ++ "px" ) ]
         ]
@@ -268,13 +282,19 @@ viewPane (Model model) currentTab =
         currentTab.pane.children
 
 
-updateTabContainer : Model -> Dict String Model -> Dict String Model
-updateTabContainer (Model model) models =
+{-| Utility function for updating a model in a group (dictionary)
+of models
+-}
+set : Model -> Dict String Model -> Dict String Model
+set (Model model) models =
     Dict.insert model.id (Model model) models
 
 
-findTabContainer : String -> Dict String Model -> Model
-findTabContainer id model =
+{-| Utility function for getting (by id) a model from a
+group (dictionary) of models
+-}
+get : String -> Dict String Model -> Model
+get id model =
     case Dict.get id model of
         Nothing ->
             initialModel id
@@ -327,9 +347,9 @@ subMsg id msg =
 
 {-| helper function to do a command after a certain amount of time
 -}
-after : Time.Time -> msg -> Cmd msg
-after time msg =
-    Process.sleep time |> Task.perform (\_ -> msg)
+wait : msg -> Cmd msg
+wait msg =
+    Process.sleep (Time.second * 1.5) |> Task.perform (\_ -> msg)
 
 
 {-| helper function to sequence another message from inside of an update

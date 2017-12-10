@@ -51,15 +51,15 @@ update msg model =
     case Debug.log "msg" msg of
         TabContainerMsg containerId subMsg ->
             let
-                ( updatedTabContainer, tabContainerCmd ) =
+                ( updated, cmd ) =
                     TC.update subMsg
-                        (TC.findTabContainer containerId model.containers)
+                        (TC.get containerId model.containers)
             in
             ( { model
                 | containers =
-                    TC.updateTabContainer updatedTabContainer model.containers
+                    TC.set updated model.containers
               }
-            , Cmd.map (TabContainerMsg containerId) tabContainerCmd
+            , Cmd.map (TabContainerMsg containerId) cmd
             )
 
 
@@ -70,7 +70,12 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ header [ class "header", id "dashboard-header", style [ ( "height", "40px" ) ] ] []
+        [ header
+            [ class "header"
+            , id "dashboard-header"
+            , style [ ( "height", "40px" ) ]
+            ]
+            []
         , div
             [ class "layout", id "dashboard-layout" ]
             [ div [ class "layout-header" ] []
@@ -95,7 +100,7 @@ tabs : String -> Model -> Html TC.Msg
 tabs id model =
     let
         containerModel =
-            TC.findTabContainer id model.containers
+            TC.get id model.containers
     in
     TC.view containerModel
         TC.FadeOut
@@ -112,9 +117,9 @@ tabs id model =
         , TC.tab []
             { id = "item3"
             , link = TC.link [] [ text "Tab 3" ]
-
-            -- , pane = TabContainer.pane [] [ div [ class "small-block" ] [] ]
-            , pane = TC.pane [ class "small-block" ] [ subcontainerExample "container2" containerModel ]
+            , pane =
+                TC.pane [ class "small-block" ]
+                    [ subcontainerExample "container2" containerModel ]
             }
         ]
 
@@ -123,7 +128,7 @@ subcontainerExample : String -> TC.Model -> Html TC.Msg
 subcontainerExample id (TC.Model model) =
     let
         containerModel =
-            TC.findTabContainer id model.containers
+            TC.get id model.containers
     in
     TC.view containerModel
         (TC.subMsg id TC.FadeOut)

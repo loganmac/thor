@@ -45,14 +45,14 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     let
-        ( appAdminInitialModel, appAdminCmd ) =
+        ( appAdmin, appAdminCmd ) =
             AppAdmin.init
 
-        ( appDashInitialModel, appDashCmd ) =
+        ( appDash, appDashCmd ) =
             AppDash.init
     in
-    ( { appAdmin = appAdminInitialModel
-      , appDash = appDashInitialModel
+    ( { appAdmin = appAdmin
+      , appDash = appDash
       , accountMenuOpen = False
       }
     , Cmd.batch
@@ -86,17 +86,17 @@ update msg model =
     case msg of
         AppAdminMsg subMsg ->
             let
-                ( updatedAppAdmin, appAdminCmd ) =
+                ( updated, cmd ) =
                     AppAdmin.update subMsg model.appAdmin
             in
-            ( { model | appAdmin = updatedAppAdmin }, Cmd.map AppAdminMsg appAdminCmd )
+            ( { model | appAdmin = updated }, Cmd.map AppAdminMsg cmd )
 
         AppDashMsg subMsg ->
             let
-                ( updatedAppDash, appDashCmd ) =
+                ( updated, cmd ) =
                     AppDash.update subMsg model.appDash
             in
-            ( { model | appDash = updatedAppDash }, Cmd.map AppDashMsg appDashCmd )
+            ( { model | appDash = updated }, Cmd.map AppDashMsg cmd )
 
         ClickOutside ->
             ( { model | accountMenuOpen = False }, Cmd.none )
