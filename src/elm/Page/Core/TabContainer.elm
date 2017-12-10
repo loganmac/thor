@@ -1,18 +1,29 @@
-module Page.Core.TabContainer exposing (..)
+port module Page.Core.TabContainer exposing (..)
 
-import Animation
-import Animation.Messenger
+import Dict exposing (Dict)
 import Html exposing (Attribute, Html, a, div, li, text, ul)
 import Html.Attributes exposing (class, classList, href, id, style)
 import Html.Events exposing (onClick)
 import Maybe.Extra
+import Process
+import Task
+import Time exposing (Time, millisecond)
 
 
 -- TYPES
+-- these first aliases are gross I know, FIXME: later
 
 
 type alias Id =
     String
+
+
+type alias TabId =
+    String
+
+
+type alias Height =
+    Int
 
 
 type alias Tab msg =
@@ -35,43 +46,60 @@ type alias Pane msg =
     }
 
 
+type alias ToMsg msg =
+    Id -> TabId -> msg
+
+
 
 -- MODEL
 
 
-type alias Model =
-    { id : String
-    , activeTab : Maybe String
-    , previousTab : Maybe String
-    , style : Animation.Messenger.State Msg
-    }
+type Model
+    = Model
+        { id : String
+        , activeTab : Maybe String
+        , fadeInTab : Maybe String
+        , fadeOutTab : Maybe String
+        , height : Height
+        , isAnimating : Bool
+        , subContainers : Dict Id Model
+        }
 
 
 {-| Use this function to create the inital state for the tabs control
 -}
-init : String -> Model
+init : String -> ( String, Model )
 init id =
-    { id = id
-    , activeTab = Nothing
-    , previousTab = Nothing
-    , style = initTabContainerStyle
-    }
+    ( id, initialModel id )
 
 
-{-| Use this function if you want to initialize your tabs control with a specific tab selected.
+initialModel : String -> Model
+initialModel id =
+    Model
+        { id = id
+        , activeTab = Nothing
+        , fadeInTab = Nothing
+        , fadeOutTab = Nothing
+        , height = 0
+        , isAnimating = False
+        , subContainers = Dict.empty
+        }
+
+
+
+-- PORTS
+
+
+{-| measureTab the change animation of a flexWrapper
+send a tabContainerId, and a tabId
 -}
-initWithActiveTab : String -> String -> Model
-initWithActiveTab id activeId =
-    { id = id
-    , activeTab = Just activeId
-    , previousTab = Nothing
-    , style = initTabContainerStyle
-    }
+port measureTab : { id : Id, tabId : TabId } -> Cmd msg
 
 
-initTabContainerStyle : Animation.Messenger.State Msg
-initTabContainerStyle =
-    Animation.style [ Animation.opacity 1.0 ]
+{-| sends back the new height of a tab.
+sends back a tabContainerId, tabId, and a height
+-}
+port newTabHeight : ({ id : Id, tabId : TabId, height : Height } -> msg) -> Sub msg
 
 
 
@@ -80,68 +108,96 @@ initTabContainerStyle =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Animation.subscription (Animate model) [ model.style ]
+    newTabHeight NewTabHeight
 
 
 
 -- UPDATE
+-- TODO: add a message for immediate? (no animation)
 
 
 type Msg
-    = FadeOut Model
-    | Active Model
-    | Animate Model Animation.Msg
+    = FadeOut Id TabId
+    | NewTabHeight { id : Id, tabId : TabId, height : Height }
+    | FadeIn
+    | SubContainerMsg Id Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg (Model model) =
     case msg of
-        FadeOut newModel ->
-            ( { newModel
-                | style =
-                    Animation.interrupt
-                        [ Animation.to [ Animation.opacity 0 ]
-                        , Animation.Messenger.send (Active newModel)
-                        ]
-                        newModel.style
-              }
+        FadeOut id tabId ->
+            if model.isAnimating then
+                ( Model model, Cmd.none )
+            else
+                ( Model
+                    { model
+                        | activeTab = Nothing
+                        , fadeInTab = Just tabId
+                        , fadeOutTab = model.activeTab
+                        , isAnimating = True
+                    }
+                , measureTab { id = id, tabId = tabId }
+                )
+
+        NewTabHeight { id, height, tabId } ->
+            -- here we check if the new tab belongs to this element,
+            -- since it is registered for messages through subscriptions
+            if id == model.id then
+                ( Model { model | height = height }, after (Time.second * 1.5) FadeIn )
+                -- ( { model | height = height }, send FadeIn )
+            else
+                ( Model model, Cmd.none )
+
+        FadeIn ->
+            ( Model
+                { model
+                    | activeTab = model.fadeInTab
+                    , fadeInTab = Nothing
+                    , fadeOutTab = Nothing
+                    , isAnimating = False
+                }
             , Cmd.none
             )
 
-        Active newModel ->
-            ( Debug.log "start" newModel, Cmd.none )
-
-        Animate tabContainerModel animMsg ->
+        SubContainerMsg containerId subMsg ->
             let
-                ( newStyle, animCmd ) =
-                    Animation.Messenger.update animMsg tabContainerModel.style
+                ( updatedTabContainer, tabContainerCmd ) =
+                    update subMsg <| findTabContainer containerId model.subContainers
             in
-            ( { tabContainerModel | style = newStyle }, animCmd )
+            ( Model
+                { model
+                    | subContainers =
+                        updateTabContainer updatedTabContainer model.subContainers
+                }
+            , Cmd.map (SubContainerMsg containerId) tabContainerCmd
+            )
 
 
 
 -- VIEW
 
 
-view : Model -> (Model -> msg) -> List (Tab msg) -> Html msg
+view : Model -> (Id -> TabId -> msg) -> List (Tab msg) -> Html msg
 view model toMsg tabs =
     div []
-        [ ul [ class "tab-links" ]
-            (List.map (viewLink model toMsg) tabs)
-        , div [ classList [ ( "tab-panes", True ), ( "active", Maybe.Extra.isJust model.activeTab ) ] ]
-            (List.map (viewPane model) tabs)
+        [ ul [ class "tab-links" ] (List.map (viewLink model toMsg) tabs)
+        , viewPaneContainer model tabs
         ]
 
 
-viewLink : Model -> (Model -> msg) -> Tab msg -> Html msg
-viewLink model toMsg currentTab =
+viewLink : Model -> (Id -> TabId -> msg) -> Tab msg -> Html msg
+viewLink (Model model) toMsg currentTab =
     let
+        maybe check =
+            Maybe.withDefault "" (check model)
+
         isActive =
-            currentTab.id == Maybe.withDefault "" model.activeTab
+            currentTab.id == maybe .activeTab || currentTab.id == maybe .fadeInTab
     in
     li
         [ classList [ ( "tab-link", True ), ( "active", isActive ) ]
-        , onClick <| clickHandler currentTab.id toMsg model
+        , onClick <| toMsg model.id currentTab.id
         ]
         [ a
             ([ href <| "#" ++ currentTab.id ] ++ currentTab.link.attributes)
@@ -149,58 +205,53 @@ viewLink model toMsg currentTab =
         ]
 
 
+viewPaneContainer : Model -> List (Tab msg) -> Html msg
+viewPaneContainer (Model model) tabs =
+    div
+        [ id model.id
+        , classList
+            [ ( "tab-panes", True )
+            , ( "active", Maybe.Extra.isJust model.activeTab || Maybe.Extra.isJust model.fadeInTab )
+            ]
+        , style [ ( "height", toString model.height ++ "px" ) ]
+        ]
+        (List.map (viewPane (Model model)) tabs)
+
+
 viewPane : Model -> Tab msg -> Html msg
-viewPane model currentTab =
+viewPane (Model model) currentTab =
     let
         is check =
             currentTab.id == Maybe.withDefault "" (check model)
 
-        displayAttrs =
+        displayClass =
             if is .activeTab then
-                [ class "tab-pane active" ]
-            else if is .previousTab then
-                [ class "tab-pane previous" ]
+                " active"
+            else if is .fadeInTab then
+                " fade-in"
+            else if is .fadeOutTab then
+                " fade-out"
             else
-                [ class "tab-pane hidden" ]
+                " hidden"
     in
     div
-        (Animation.render model.style
-            ++ [ id (model.id ++ "-" ++ currentTab.id) ]
-            ++ displayAttrs
+        ([ id (model.id ++ "-" ++ currentTab.id) ]
+            ++ [ class ("tab-pane" ++ displayClass) ]
             ++ currentTab.pane.attributes
         )
         currentTab.pane.children
 
 
-clickHandler : String -> (Model -> msg) -> Model -> msg
-clickHandler tabId toMsg model =
-    toMsg { model | activeTab = Just tabId }
+updateTabContainer : Model -> Dict String Model -> Dict String Model
+updateTabContainer (Model model) models =
+    Dict.insert model.id (Model model) models
 
 
-updateTabContainer : Model -> List Model -> List Model
-updateTabContainer model modelList =
-    if List.any (\a -> a.id == model.id) modelList then
-        List.map
-            (\a ->
-                if a.id == model.id then
-                    model
-                else
-                    a
-            )
-            modelList
-    else
-        model :: modelList
-
-
-findTabContainer : String -> List Model -> Model
-findTabContainer id modelList =
-    case List.head <| List.filter (\x -> x.id == id) modelList of
+findTabContainer : String -> Dict String Model -> Model
+findTabContainer id model =
+    case Dict.get id model of
         Nothing ->
-            { id = id
-            , activeTab = Nothing
-            , previousTab = Nothing
-            , style = initTabContainerStyle
-            }
+            initialModel id
 
         Just tabs ->
             tabs
@@ -238,3 +289,18 @@ link attributes children =
 pane : List (Attribute msg) -> List (Html msg) -> Pane msg
 pane attributes children =
     Pane attributes children
+
+
+{-| helper function to do a command after a certain amount of time
+-}
+after : Time.Time -> msg -> Cmd msg
+after time msg =
+    Process.sleep time |> Task.perform (\_ -> msg)
+
+
+{-| helper function to sequence another message from inside of an update
+-}
+send : msg -> Cmd msg
+send msg =
+    Task.succeed msg
+        |> Task.perform identity

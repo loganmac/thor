@@ -57,18 +57,38 @@
     * This is where most of the magic happens..
     * animations and stuff to make the
     * tab panes grow and shrink.                */
+    .tab-panes {
+      position: relative;
+      transition: height .7s cubic-bezier(0.86, 0, 0.07, 1) .5s;
+    }
     .tab-panes.active{
       border: 6px solid #385265;
+      animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
     }
 
-    /*.tab-pane {
-      overflow: hidden;
-      opactiy: 0;
-    }*/
+    .tab-pane {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+    }
 
-    /*.tab-pane.hidden {
+    .tab-pane.fade-in{
+      animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1) .5s;
+    }
+
+    .tab-pane.fade-out{
+      animation: fadeOut .5s cubic-bezier(0.86, 0, 0.07, 1);
+    }
+
+    .tab-pane.active{
+      opacity: 1;
+    }
+
+    .tab-pane.hidden {
       display: none;
-    }*/
+    }
 
     /************************
     ** Animation Keyframes **
@@ -76,12 +96,6 @@
     * This tells the browser the timing of animations */
     @keyframes fadeIn {
       0% {opacity: 0;}
-      100% {opacity: 1;}
-    }
-
-    @keyframes delayedFadeIn {
-      0% {opacity: 0;}
-      33% {opacity: 0;}
       100% {opacity: 1;}
     }
 
@@ -97,28 +111,23 @@
 
   <body>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.0/velocity.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.0/velocity.min.js"></script> -->
     <script src="build/elm.js"></script>
     <script>
       var app = Elm.Main.fullscreen();
-      // app.ports.animateChangeTab.subscribe(function() {
-      //     var activeTab = $('.tab-pane.active')
-      //     var previousTab = $('.tab-pane.previous')
-      //     previousTab.velocity("fadeOut", {duration: 1500})
-      //     activeTab.velocity("fadeIn", {duration: 1500})
-      // })
-      // // Generate a uuidv4
-      // function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
-      //
-      // app.ports.generateUuid.subscribe(function() {
-      //   var u = uuid('');
-      //   console.log(u)
-      //   app.ports.uuid.send(u);
-      // });
-
-      // app.ports.toJs.subscribe(function(str) {
-      //   alert(str);
-      // });
+      app.ports.measureTab.subscribe(function(msg) {
+        window.requestAnimationFrame(function() {
+          containerRef = '#' + msg.id
+          // measure borders... so content fits inside after setting container height
+          topBorderWidth = parseInt($(containerRef).css("borderTopWidth"), 10)
+          bottomBorderWidth = parseInt($(containerRef).css("borderBottomWidth"), 10)
+          // get the tab height, remembering to add border height
+          tabRef = '#' + msg.id + '-' + msg.tabId;
+          tabHeight = $(tabRef).height() + topBorderWidth + bottomBorderWidth
+          msg.height = tabHeight
+          app.ports.newTabHeight.send(msg)
+        })
+      })
     </script>
   </body>
   </html>
