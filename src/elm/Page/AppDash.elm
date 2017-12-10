@@ -3,11 +3,11 @@ module Page.AppDash exposing (..)
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html, div, h1, h2, header, label, text)
 import Html.Attributes exposing (class, disabled, id, placeholder, style)
-import Page.Core.TabContainer as TabContainer
+import Page.Core.TabContainer as TC
 
 
 type alias Model =
-    { tabContainers : Dict String TabContainer.Model
+    { containers : Dict String TC.Model
     }
 
 
@@ -19,7 +19,7 @@ type alias Model =
 
 init : ( Model, Cmd msg )
 init =
-    ( { tabContainers = Dict.fromList [ TabContainer.init "container1" ] }
+    ( { containers = Dict.empty }
     , Cmd.none
     )
 
@@ -30,12 +30,12 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch (List.map mapSub (Dict.toList model.tabContainers))
+    Sub.batch (List.map mapSub (Dict.toList model.containers))
 
 
-mapSub : ( String, TabContainer.Model ) -> Sub Msg
+mapSub : ( String, TC.Model ) -> Sub Msg
 mapSub ( id, container ) =
-    Sub.map (TabContainerMsg id) (TabContainer.subscriptions container)
+    Sub.map (TabContainerMsg id) (TC.subscriptions container)
 
 
 
@@ -43,7 +43,7 @@ mapSub ( id, container ) =
 
 
 type Msg
-    = TabContainerMsg String TabContainer.Msg
+    = TabContainerMsg String TC.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -52,12 +52,12 @@ update msg model =
         TabContainerMsg containerId subMsg ->
             let
                 ( updatedTabContainer, tabContainerCmd ) =
-                    TabContainer.update subMsg
-                        (TabContainer.findTabContainer containerId model.tabContainers)
+                    TC.update subMsg
+                        (TC.findTabContainer containerId model.containers)
             in
             ( { model
-                | tabContainers =
-                    TabContainer.updateTabContainer updatedTabContainer model.tabContainers
+                | containers =
+                    TC.updateTabContainer updatedTabContainer model.containers
               }
             , Cmd.map (TabContainerMsg containerId) tabContainerCmd
             )
@@ -78,56 +78,68 @@ view model =
                 [ div [ class "columns col_left eight" ]
                     [ h2 [] [ text "Service-specific Server Names" ]
                     , div [ class "boxes" ]
-                        [ Html.map (TabContainerMsg "container1") <|
-                            tabs "container1" (Debug.log "model" model) TabContainer.FadeOut
-                        ]
+                        [ tabContainer model ]
                     ]
                 ]
             ]
         ]
 
 
-tabs : String -> Model -> TabContainer.ToMsg msg -> Html msg
-tabs id model toMsg =
-    TabContainer.view (TabContainer.findTabContainer id model.tabContainers)
-        toMsg
-        [ TabContainer.tab []
+tabContainer : Model -> Html Msg
+tabContainer model =
+    tabs "container1" (Debug.log "model" model)
+        |> Html.map (TabContainerMsg "container1")
+
+
+tabs : String -> Model -> Html TC.Msg
+tabs id model =
+    let
+        containerModel =
+            TC.findTabContainer id model.containers
+    in
+    TC.view containerModel
+        TC.FadeOut
+        [ TC.tab []
             { id = "item1"
-            , link = TabContainer.link [] [ text "Tab 1" ]
-            , pane = TabContainer.pane [] [ div [ class "medium-block" ] [] ]
+            , link = TC.link [] [ text "Tab 1" ]
+            , pane = TC.pane [] [ div [ class "medium-block" ] [] ]
             }
-        , TabContainer.tab []
+        , TC.tab []
             { id = "item2"
-            , link = TabContainer.link [] [ text "Tab 2" ]
-            , pane = TabContainer.pane [] [ div [ class "huge-block" ] [] ]
+            , link = TC.link [] [ text "Tab 2" ]
+            , pane = TC.pane [] [ div [ class "huge-block" ] [] ]
             }
-        , TabContainer.tab []
+        , TC.tab []
             { id = "item3"
-            , link = TabContainer.link [] [ text "Tab 3" ]
+            , link = TC.link [] [ text "Tab 3" ]
 
             -- , pane = TabContainer.pane [] [ div [ class "small-block" ] [] ]
-            , pane = TabContainer.pane [ class "small-block" ] [ tabs2 "container2" model toMsg ]
+            , pane = TC.pane [ class "small-block" ] [ subcontainerExample "container2" containerModel ]
             }
         ]
 
 
-tabs2 : String -> Model -> TabContainer.ToMsg msg -> Html msg
-tabs2 id model toMsg =
-    TabContainer.view (TabContainer.findTabContainer id model.tabContainers)
-        toMsg
-        [ TabContainer.tab []
+subcontainerExample : String -> TC.Model -> Html TC.Msg
+subcontainerExample id (TC.Model model) =
+    let
+        containerModel =
+            TC.findTabContainer id model.containers
+    in
+    TC.view containerModel
+        (TC.subMsg id TC.FadeOut)
+        [ TC.tab []
             { id = "item1"
-            , link = TabContainer.link [] [ text "Tab 1" ]
-            , pane = TabContainer.pane [] [ div [ class "medium-block" ] [] ]
+            , link = TC.link [] [ text "Tab 1" ]
+            , pane = TC.pane [] [ div [ class "medium-block" ] [] ]
             }
-        , TabContainer.tab []
+        , TC.tab []
             { id = "item2"
-            , link = TabContainer.link [] [ text "Tab 2" ]
-            , pane = TabContainer.pane [] [ div [ class "huge-block" ] [] ]
+            , link = TC.link [] [ text "Tab 2" ]
+            , pane = TC.pane [] [ div [ class "huge-block" ] [] ]
             }
-        , TabContainer.tab []
+        , TC.tab []
             { id = "item3"
-            , link = TabContainer.link [] [ text "Tab 3" ]
-            , pane = TabContainer.pane [] [ div [ class "small-block" ] [] ]
+            , link = TC.link [] [ text "Tab 3" ]
+            , pane = TC.pane [] [ div [ class "small-block" ] [] ]
             }
         ]

@@ -62,7 +62,7 @@ type Model
         , fadeOutTab : Maybe String
         , height : Height
         , isAnimating : Bool
-        , subContainers : Dict Id Model
+        , containers : Dict Id Model
         }
 
 
@@ -82,7 +82,7 @@ initialModel id =
         , fadeOutTab = Nothing
         , height = 0
         , isAnimating = False
-        , subContainers = Dict.empty
+        , containers = Dict.empty
         }
 
 
@@ -107,8 +107,13 @@ port newTabHeight : ({ id : Id, tabId : TabId, height : Height } -> msg) -> Sub 
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    newTabHeight NewTabHeight
+subscriptions (Model model) =
+    Sub.batch <| newTabHeight NewTabHeight :: List.map mapSub (Dict.toList model.containers)
+
+
+mapSub : ( String, Model ) -> Sub Msg
+mapSub ( id, container ) =
+    Sub.map (SubcontainerMsg id) (subscriptions container)
 
 
 
@@ -120,7 +125,27 @@ type Msg
     = FadeOut Id TabId
     | NewTabHeight { id : Id, tabId : TabId, height : Height }
     | FadeIn
-    | SubContainerMsg Id Msg
+    | SubcontainerMsg Id Msg
+
+
+
+{--|
+  Updating for this component goes like this:
+
+  FadeOut => NewTabHeight => FadeIn
+  FadeOut ->
+    set the clicked tab to fadingIn, set the activeTab to fading out
+    set isAnimating to true (to debounce)
+    call out to port to measure the height of the tab that was just clicked.
+  NewTabHeight ->
+    this is received from a port, the callback after we told JS to measure a tab.
+    set the height, then wait for the animation and then send FadeIn
+  FadeIn ->
+    Set the activeTab to the one that was fading in, and clear the other two states.
+    set isAnimating to false, because we aren't debouncing anymore
+
+  note: SubcontainerMsg is for nested containers, we dispatch the subMessages to them
+-}
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -136,6 +161,7 @@ update msg (Model model) =
                         , fadeInTab = Just tabId
                         , fadeOutTab = model.activeTab
                         , isAnimating = True
+                        , containers = Dict.empty
                     }
                 , measureTab { id = id, tabId = tabId }
                 )
@@ -160,17 +186,17 @@ update msg (Model model) =
             , Cmd.none
             )
 
-        SubContainerMsg containerId subMsg ->
+        SubcontainerMsg containerId subMsg ->
             let
                 ( updatedTabContainer, tabContainerCmd ) =
-                    update subMsg <| findTabContainer containerId model.subContainers
+                    update subMsg <| findTabContainer containerId model.containers
             in
             ( Model
                 { model
-                    | subContainers =
-                        updateTabContainer updatedTabContainer model.subContainers
+                    | containers =
+                        updateTabContainer updatedTabContainer model.containers
                 }
-            , Cmd.map (SubContainerMsg containerId) tabContainerCmd
+            , Cmd.map (SubcontainerMsg containerId) tabContainerCmd
             )
 
 
@@ -289,6 +315,14 @@ link attributes children =
 pane : List (Attribute msg) -> List (Html msg) -> Pane msg
 pane attributes children =
     Pane attributes children
+
+
+{-| Takes an ID, and wraps the message with an annotated SubContainerMsg,
+so that we can dispatch those messages to the correct SubContainer
+-}
+subMsg : Id -> (a -> b -> Msg) -> a -> b -> Msg
+subMsg id msg =
+    \x y -> SubcontainerMsg id (msg x y)
 
 
 {-| helper function to do a command after a certain amount of time
