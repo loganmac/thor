@@ -1,27 +1,40 @@
 module Page.AppDash exposing (..)
 
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html, div, h1, h2, header, label, text)
-import Html.Attributes exposing (class, disabled, id, placeholder, style)
-import Page.Core.TabContainer as TC
+import Html exposing (Attribute, Html, a, div, li, text, ul)
+import Html.Attributes exposing (class, classList, disabled, href, id, style)
+import Html.Events exposing (onClick)
+import Port
+import Time
+import Util
+import View.Container as Container
+
+
+-- MODEL
 
 
 type alias Model =
-    { containers : Dict String TC.Model
+    { containers : Dict String Container.Container
+    , isAnimating : Bool
     }
 
 
 
 -- here we are initializing the state. In the real app,
--- we would make an api call to fetch the data, then use the returned
--- data to initialize TabContainers
+-- we will make an api call to fetch the data, then use the returned
+-- data to initialize containers
 
 
 init : ( Model, Cmd msg )
 init =
-    ( { containers = Dict.empty }
-    , Cmd.none
-    )
+    ( { containers = Dict.fromList demoContainers, isAnimating = False }, Cmd.none )
+
+
+demoContainers : List ( String, Container.Container )
+demoContainers =
+    [ Container.container "container1"
+    , Container.container "container2"
+    ]
 
 
 
@@ -30,12 +43,7 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch (List.map mapSub (Dict.toList model.containers))
-
-
-mapSub : ( String, TC.Model ) -> Sub Msg
-mapSub ( id, container ) =
-    Sub.map (TabContainerMsg id) (TC.subscriptions container)
+    Port.newContentHeight NewContentHeight
 
 
 
@@ -43,23 +51,37 @@ mapSub ( id, container ) =
 
 
 type Msg
-    = TabContainerMsg String TC.Msg
+    = FadeOut String String
+    | NewContentHeight { containerId : String, contentId : String, newHeight : Float }
+    | FadeIn String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TabContainerMsg containerId subMsg ->
-            let
-                ( updated, cmd ) =
-                    TC.update subMsg
-                        (TC.get containerId model.containers)
-            in
+        FadeOut containerId contentId ->
+            ( { model
+                | containers = Container.fadeOut containerId contentId model.containers
+                , isAnimating = True
+              }
+            , Port.measureContent { containerId = containerId, contentId = contentId }
+            )
+
+        NewContentHeight { containerId, newHeight, contentId } ->
             ( { model
                 | containers =
-                    TC.set updated model.containers
+                    Container.newContentHeight
+                        containerId
+                        contentId
+                        newHeight
+                        model.containers
               }
-            , Cmd.map (TabContainerMsg containerId) cmd
+            , Util.wait (Time.second * 1) (FadeIn containerId)
+            )
+
+        FadeIn containerId ->
+            ( { model | containers = Container.fadeIn containerId model.containers, isAnimating = False }
+            , Cmd.none
             )
 
 
@@ -69,82 +91,35 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ header
-            [ class "header"
-            , id "dashboard-header"
-            , style [ ( "height", "40px" ) ]
-            ]
+    let
+        containers =
+            Dict.values model.containers
+
+        contents =
             []
-        , div
-            [ class "layout", id "dashboard-layout" ]
-            [ div [ class "layout-header" ] []
-            , div []
-                [ div [ class "columns col_left eight" ]
-                    [ h2 [] [ text "Service-specific Server Names" ]
-                    , div [ class "boxes" ]
-                        [ tabContainer model ]
-                    ]
-                ]
-            ]
-        ]
-
-
-tabContainer : Model -> Html Msg
-tabContainer model =
-    tabs "container1" model
-        |> Html.map (TabContainerMsg "container1")
-
-
-tabs : String -> Model -> Html TC.Msg
-tabs id model =
-    let
-        containerModel =
-            TC.get id model.containers
     in
-    TC.view containerModel
-        TC.FadeOut
-        [ TC.tab []
-            { id = "item1"
-            , link = TC.link [] [ text "Tab 1" ]
-            , pane = TC.pane [] [ div [ class "medium-block" ] [] ]
-            }
-        , TC.tab []
-            { id = "item2"
-            , link = TC.link [] [ text "Tab 2" ]
-            , pane = TC.pane [] [ div [ class "huge-block" ] [] ]
-            }
-        , TC.tab []
-            { id = "item3"
-            , link = TC.link [] [ text "Tab 3" ]
-            , pane =
-                TC.pane [ class "small-block" ]
-                    [ subcontainerExample "container2" containerModel ]
-            }
-        ]
+    div [ class "app-dash" ]
+        []
 
 
-subcontainerExample : String -> TC.Model -> Html TC.Msg
-subcontainerExample id (TC.Model model) =
+
+-- containerLinks : Model -> String -> Container.Container -> Html Msg
+-- containerLinks model containerId =
+--     ul [ class "links" ] (List.map (viewLink model containerId) contentId)
+
+
+viewLink : Model -> String -> String -> Html Msg
+viewLink model containerId contentId =
     let
-        containerModel =
-            TC.get id model.containers
+        link =
+            "#" ++ containerId ++ contentId
+
+        action =
+            if model.isAnimating then
+                disabled True
+            else
+                onClick <| FadeOut containerId contentId
     in
-    TC.view containerModel
-        (TC.subMsg id TC.FadeOut)
-        [ TC.tab []
-            { id = "item1"
-            , link = TC.link [] [ text "Tab 1" ]
-            , pane = TC.pane [] [ div [ class "medium-block" ] [] ]
-            }
-        , TC.tab []
-            { id = "item2"
-            , link = TC.link [] [ text "Tab 2" ]
-            , pane = TC.pane [] [ div [ class "huge-block" ] [] ]
-            }
-        , TC.tab []
-            { id = "item3"
-            , link = TC.link [] [ text "Tab 3" ]
-            , pane = TC.pane [] [ div [ class "small-block" ] [] ]
-            }
-        ]
+    li
+        [ class "link", action ]
+        [ a [ href <| link ] [ text <| "Change " ++ link ] ]

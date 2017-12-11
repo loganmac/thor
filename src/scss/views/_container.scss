@@ -1,0 +1,99 @@
+/*************
+** LINKS *
+**************
+* Just CSS to make the link elements look pretty :)
+*/
+
+.links {
+  display: flex;
+  padding-left: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+  list-style: none;
+  background-color: white;
+  border-bottom: 2px solid #ddd;
+}
+
+.link {
+  flex: 1 1 100%;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-top-right-radius: .25rem;
+  border-top-left-radius: .25rem;
+  display: block;
+  padding: .5em 1em;
+}
+
+.link a {
+  color: blue;
+  text-decoration: none;
+}
+
+.active {
+  color: #464a4c;
+  background-color: #fff;
+  border-color: #ddd #ddd #fff;
+}
+
+/*************************
+** Containers & Content **
+**************************
+* This is where most of the magic happens..
+* animations and stuff to make the containers resize
+*/
+
+.container {
+  position: relative;
+  transition: height .7s cubic-bezier(0.86, 0, 0.07, 1) .3s;
+  background-color: #E9EDF0;
+}
+
+.container.active {
+  border: 6px solid #385265;
+  animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+.content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+}
+
+.content.fade-out {
+  animation: fadeOut .7s cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+.content.active {
+  animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
+  opacity: 1;
+}
+
+.content.hidden {
+  display: none;
+}
+
+/************************
+** Animation Keyframes **
+*************************
+* This tells the browser the timing of animations
+*/
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

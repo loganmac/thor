@@ -4,7 +4,7 @@ import Data.App as App exposing (App)
 import Html exposing (Attribute, Html, div, h2, input, label, text)
 import Html.Attributes exposing (class, disabled, placeholder, value)
 import Http
-import Page.Core.Corral as Corral
+import View.Corral as Corral
 
 
 -- MODEL
@@ -12,7 +12,7 @@ import Page.Core.Corral as Corral
 
 type alias Model =
     { app : App
-    , corral : Corral.Model
+    , corral : Corral.Corral
     }
 
 

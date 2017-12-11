@@ -1,4 +1,4 @@
-module Page.Core.AccountMenu exposing (..)
+module View.AccountMenu exposing (..)
 
 import Gravatar exposing (defaultOptions, url, withSize)
 import Html exposing (Attribute, Html, a, div, img, text)

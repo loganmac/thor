@@ -1,49 +1,29 @@
 module Main exposing (..)
 
--- import Html.Events exposing (onClick)
-
-import Html exposing (Html, br, div, h1, h2, header, p, text)
-import Html.Attributes exposing (class, id, style)
+import Html exposing (Html, div, h1, img, text)
 import Page.AppAdmin as AppAdmin
 import Page.AppDash as AppDash
-import Page.Core.TopNav as TopNav
+import View.AccountMenu as AccountMenu
+import View.TopNav as TopNav
 
 
--- TYPES
-
-
-type Page
-    = Blank
-    | NotFound
-    | Dashboard
-    | AppDash
-    | AppLogs
-    | AppHistory
-    | AppNetwork
-    | AppConfig
-    | AppAdmin
-    | AccountAdmin
-    | TeamAdmin
-
-
-type PageState
-    = Loaded Page
-    | TransitioningFrom Page
-
-
-
--- MODEL
+---- MODEL ----
 
 
 type alias Model =
-    { appAdmin : AppAdmin.Model
-    , accountMenuOpen : Bool
+    { logoPath : String
+    , appAdmin : AppAdmin.Model
     , appDash : AppDash.Model
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+type alias Flags =
+    { logoPath : String
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         ( appAdmin, appAdminCmd ) =
             AppAdmin.init
@@ -51,9 +31,9 @@ init =
         ( appDash, appDashCmd ) =
             AppDash.init
     in
-    ( { appAdmin = appAdmin
+    ( { logoPath = flags.logoPath
+      , appAdmin = appAdmin
       , appDash = appDash
-      , accountMenuOpen = False
       }
     , Cmd.batch
         [ Cmd.map AppAdminMsg appAdminCmd
@@ -63,22 +43,12 @@ init =
 
 
 
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch [ Sub.map AppDashMsg (AppDash.subscriptions model.appDash) ]
-
-
-
--- UPDATE
+---- UPDATE ----
 
 
 type Msg
     = AppAdminMsg AppAdmin.Msg
     | AppDashMsg AppDash.Msg
-    | ClickOutside
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -98,29 +68,41 @@ update msg model =
             in
             ( { model | appDash = updated }, Cmd.map AppDashMsg cmd )
 
-        ClickOutside ->
-            ( { model | accountMenuOpen = False }, Cmd.none )
+
+
+---- SUBSCRIPTIONS ----
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Sub.map AppDashMsg (AppDash.subscriptions model.appDash)
+        ]
 
 
 
--- VIEW
+---- VIEW ----
 
 
 view : Model -> Html Msg
 view model =
-    div [ class "main" ]
-        [ TopNav.view
-        , Html.map AppDashMsg (AppDash.view model.appDash)
+    div []
+        [ TopNav.view AccountMenu.view
+        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
 
-        -- , Html.map AppAdminMsg (AppAdmin.view model.appAdmin)
+        -- , Html.map AppDashMsg <| AppDash.view model.appDash
         ]
 
 
-main : Program Never Model Msg
+
+---- PROGRAM ----
+
+
+main : Program Flags Model Msg
 main =
-    Html.program
-        { init = init
+    Html.programWithFlags
+        { view = view
+        , init = init
         , update = update
         , subscriptions = subscriptions
-        , view = view
         }

@@ -1,4 +1,4 @@
-module Page.Core.Corral exposing (..)
+module View.Corral exposing (..)
 
 import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class)
@@ -8,7 +8,7 @@ import Html.Events exposing (onClick)
 -- MODEL
 
 
-type alias Model =
+type alias Corral =
     { title : String
     , nav : List String
     , value : String
@@ -20,7 +20,7 @@ type alias Model =
 -- VIEW
 
 
-view : Model -> (String -> msg) -> Html msg -> Html msg
+view : Corral -> (String -> msg) -> Html msg -> Html msg
 view model itemClick inner =
     div [ class "corral" ]
         [ div [ class "left-nav" ]

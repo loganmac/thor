@@ -1,15 +1,14 @@
-module Page.Core.TopNav exposing (..)
+module View.TopNav exposing (..)
 
 import Html exposing (Attribute, Html, div, img, text)
 import Html.Attributes exposing (alt, class, src)
-import Page.Core.AccountMenu as AccountMenu
 
 
 -- VIEW
 
 
-view : Html msg
-view =
+view : Html msg -> Html msg
+view inner =
     div [ class "top-nav" ]
         [ div [ class "logo" ]
             [ img [ src "src/svg/logo.svg" ] []
@@ -23,5 +22,5 @@ view =
             [ img [ src "src/svg/support.svg" ] []
             , div [ class "txt" ] [ text "Support" ]
             ]
-        , AccountMenu.view
+        , inner
         ]

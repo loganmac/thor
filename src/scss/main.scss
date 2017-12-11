@@ -1,0 +1,48 @@
+// SETUP
+@import "colors";
+// PAGES
+@import "./pages/app_dash";
+// VIEWS
+@import "./views/container";
+
+
+
+body {
+  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  text-align: center;
+  color: #293c4b;
+  margin: 0px auto;
+  max-width: 1180px;
+}
+
+h1 {
+  font-size: 30px;
+}
+
+img {
+  margin: 20px 0;
+  max-width: 200px;
+}
+
+
+/********
+**BLOCKS*
+*********
+*These are for displaying items of different heights
+*/
+
+.small-block {
+  min-height: 100px;
+  background-color: $nanobox-green;
+}
+
+.medium-block {
+  min-height: 200px;
+  background-color: $nanobox-yellow;
+}
+
+.large-block {
+  min-height: 300px;
+  background-color: $nanobox-blue;
+}
