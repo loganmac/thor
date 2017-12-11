@@ -65,8 +65,7 @@ view : Model -> Html Msg
 view model =
     div [ class "app-admin" ]
         [ Corral.view model.corral CorralItemClicked <|
-            div [ class "tab-content" ]
-                [ activeTab model ]
+            div [ class "tab-content" ] [ activeTab model ]
         ]
 
 

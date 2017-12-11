@@ -6,6 +6,10 @@ import Html.Attributes exposing (class, classList, disabled, href, id, style)
 import Maybe.Extra exposing (isJust)
 
 
+type alias Containers =
+    Dict String Container
+
+
 {-| Container is the element that flexes to fit its inner contents
 -}
 type alias Container =
@@ -14,15 +18,6 @@ type alias Container =
     , fadeInContentId : Maybe String
     , fadeOutContentId : Maybe String
     , height : Float
-    }
-
-
-{-| Content is the inner content of the container
--}
-type alias Content msg =
-    { id : String
-    , attributes : List (Attribute msg)
-    , children : List (Html msg)
     }
 
 
@@ -82,13 +77,6 @@ contentView container index content =
 container : String -> ( String, Container )
 container id =
     ( id, init id )
-
-
-{-| Create a content
--}
-content : String -> List (Attribute msg) -> List (Html msg) -> Content msg
-content id attributes children =
-    Content id attributes children
 
 
 {-| Utility for updating a container in a group (dictionary)

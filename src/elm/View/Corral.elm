@@ -23,21 +23,20 @@ type alias Corral =
 view : Corral -> (String -> msg) -> Html msg -> Html msg
 view model itemClick inner =
     div [ class "corral" ]
-        [ div [ class "left-nav" ]
-            [ div [ class "section-title" ]
-                [ text model.title
-                ]
-            , div [ class "nav" ] <| List.map (navItem itemClick) model.nav
+        [ div [ class "corral-nav" ]
+            [ div [ class "corral-section-title" ]
+                [ text model.title ]
+            , div [ class "corral-nav-bar" ] <| List.map (navItem itemClick) model.nav
             ]
-        , div [ class "content" ]
-            [ div [ class "section-title" ] [ text model.activeItem ]
+        , div [ class "corral-content" ]
+            [ div [ class "corral-section-title" ] [ text model.activeItem ]
             , inner
             ]
         ]
 
 
 navItem : (String -> msg) -> String -> Html msg
-navItem event txt =
-    div [ class "item", onClick <| event txt ]
+navItem toMsg txt =
+    div [ class "corral-nav-item", onClick <| toMsg txt ]
         [ text txt
         ]

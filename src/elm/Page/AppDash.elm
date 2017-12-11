@@ -14,7 +14,7 @@ import View.Container as Container
 
 
 type alias Model =
-    { containers : Dict String Container.Container
+    { containers : Container.Containers
     , isAnimating : Bool
     }
 
