@@ -4,9 +4,24 @@ port module Port exposing (..)
 -}
 
 
-port measureContent : { containerId : String, contentId : String } -> Cmd msg
+port measureContent :
+    { containerId : String
+    , contentId : String
+    , fadeContentId : String
+    , parentId : String
+    }
+    -> Cmd msg
 
 
 {-| sends back the height of the new content.
 -}
-port newContentHeight : ({ containerId : String, contentId : String, newHeight : Float } -> msg) -> Sub msg
+port newContentHeight :
+    ({ containerId : String
+     , contentId : String
+     , newHeight : Float
+     , oldHeight : Float
+     , parentId : String
+     }
+     -> msg
+    )
+    -> Sub msg

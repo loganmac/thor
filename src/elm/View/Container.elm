@@ -6,14 +6,11 @@ import Html.Attributes exposing (class, classList, disabled, href, id, style)
 import Maybe.Extra exposing (isJust)
 
 
-type alias Containers =
-    Dict String Container
-
-
 {-| Container is the element that flexes to fit its inner contents
 -}
 type alias Container =
-    { id : String
+    { id : Id
+    , parentId : ParentId
     , activeContentId : Maybe String
     , fadeInContentId : Maybe String
     , fadeOutContentId : Maybe String
@@ -21,11 +18,58 @@ type alias Container =
     }
 
 
+
+-- TYPE ALIASES (to make signatures easier to understand)
+
+
+type alias FadeOutMsg =
+    { containerId : Id
+    , contentId : ContentId
+    , parentId : ParentId
+    }
+
+
+type alias NewContentHeightsMsg =
+    { containerId : Id
+    , contentId : ContentId
+    , newHeight : Height
+    , oldHeight : Height
+    , parentId : ParentId
+    }
+
+
+type alias FadeInMsg =
+    { containerId : Id
+    , parentId : ParentId
+    }
+
+
+type alias Containers =
+    Dict String Container
+
+
+type alias Id =
+    String
+
+
+type alias ContentId =
+    String
+
+
+type alias ParentId =
+    String
+
+
+type alias Height =
+    Float
+
+
 {-| Use this to create the inital state for the container
 -}
-init : String -> Container
-init id =
+init : Id -> ParentId -> Container
+init id parentId =
     { id = id
+    , parentId = parentId
     , activeContentId = Nothing
     , fadeInContentId = Nothing
     , fadeOutContentId = Nothing
@@ -50,7 +94,7 @@ contentView : Container -> Int -> Html msg -> Html msg
 contentView container index content =
     let
         contentId =
-            "content-" ++ toString index
+            "content-" ++ toString (index + 1)
 
         is check =
             contentId == Maybe.withDefault "" (check container)
@@ -66,23 +110,24 @@ contentView container index content =
                 " hidden"
     in
     div
-        ([ id (container.id ++ contentId) ]
+        ([ id (container.id ++ "-" ++ contentId) ]
             ++ [ class ("content" ++ displayClass) ]
         )
         [ content ]
 
 
-{-| Create a container with default properties
+{-| Utility to determine whether the content is already
+the active content of the container
 -}
-container : String -> ( String, Container )
-container id =
-    ( id, init id )
+activeContentId : Id -> ContentId -> Containers -> Id
+activeContentId containerId contentId containers =
+    Maybe.withDefault "" <| .activeContentId <| get containerId "" containers
 
 
 {-| Utility for updating a container in a group (dictionary)
 of container
 -}
-set : Container -> Dict String Container -> Dict String Container
+set : Container -> Containers -> Containers
 set container containers =
     Dict.insert container.id container containers
 
@@ -90,14 +135,35 @@ set container containers =
 {-| Utility for getting (by id) a model from a
 group (dictionary) of models
 -}
-get : String -> Dict String Container -> Container
-get id model =
+get : Id -> ParentId -> Containers -> Container
+get id parentId model =
     case Dict.get id model of
         Nothing ->
-            init id
+            init id parentId
 
         Just container ->
             container
+
+
+{-| Utility for getting any subcontainers
+-}
+getSubcontainers : Id -> Containers -> Containers
+getSubcontainers id containers =
+    Dict.filter (\k v -> v.parentId == id) containers
+
+
+{-| utility to update subcontainers
+-}
+resetSubcontainers : Id -> Containers -> Containers
+resetSubcontainers id containers =
+    Dict.map
+        (\k v ->
+            if v.parentId == id then
+                init v.id id
+            else
+                v
+        )
+        containers
 
 
 
@@ -125,39 +191,47 @@ get id model =
 
 {-| updates the state of a container to fade it out
 -}
-fadeOut : String -> String -> Dict String Container -> Dict String Container
-fadeOut containerId contentId containers =
+fadeOut : FadeOutMsg -> Containers -> Containers
+fadeOut { containerId, contentId, parentId } containers =
     let
         oldContainer =
-            get containerId containers
+            get containerId parentId containers
     in
-    set
-        { oldContainer
-            | activeContentId = Nothing
-            , fadeInContentId = Just contentId
-            , fadeOutContentId = oldContainer.activeContentId
-        }
-        containers
+    resetSubcontainers containerId containers
+        |> set
+            { oldContainer
+                | activeContentId = Nothing
+                , fadeInContentId = Just contentId
+                , fadeOutContentId = oldContainer.activeContentId
+            }
 
 
 {-| updates the state of a container with a new height
+, and reduces the size of the parentContainer with the oldHeight
 -}
-newContentHeight : String -> String -> Float -> Dict String Container -> Dict String Container
-newContentHeight containerId contentId newHeight containers =
+newContentHeights : NewContentHeightsMsg -> Containers -> Containers
+newContentHeights msg containers =
     let
         oldContainer =
-            get containerId containers
+            get msg.containerId msg.parentId containers
+
+        parentContainer =
+            get msg.parentId "" containers
+
+        parentHeight =
+            msg.newHeight + parentContainer.height - msg.oldHeight
     in
-    set { oldContainer | height = newHeight } containers
+    set { parentContainer | height = parentHeight } <|
+        set { oldContainer | height = msg.newHeight } containers
 
 
-{-| updates the state of a container to fade it i n
+{-| updates the state of a container to fade it in
 -}
-fadeIn : String -> Dict String Container -> Dict String Container
-fadeIn containerId containers =
+fadeIn : FadeInMsg -> Containers -> Containers
+fadeIn msg containers =
     let
         oldContainer =
-            get containerId containers
+            get msg.containerId msg.parentId containers
     in
     set
         { oldContainer

@@ -70,7 +70,11 @@ decoder =
 -- GET
 
 
+appUrl : String -> String
+appUrl appId =
+    apiUrl <| "apps/" ++ appId
+
+
 getApp : String -> (Result Http.Error App -> msg) -> Cmd msg
 getApp appId msg =
-    Http.get (apiUrl ("apps/" ++ appId)) decoder
-        |> Http.send msg
+    Http.send msg <| Http.get (appUrl appId) decoder

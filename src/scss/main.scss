@@ -1,7 +1,7 @@
 // SETUP
 @import "colors";
 // PAGES
-@import "./pages/app_dash";
+// @import "./pages/app_dash";
 // VIEWS
 @import "./views/container";
 
@@ -11,6 +11,7 @@ body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
   text-align: center;
+  background-color: #E9EDF0;
   color: #293c4b;
   margin: 0px auto;
   max-width: 1180px;

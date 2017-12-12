@@ -3,6 +3,7 @@ import { Main } from './elm/Main.elm';
 import registerServiceWorker from './js/registerServiceWorker';
 import logoPath from './svg/logo.svg'
 
+console.log(logoPath)
 
 const app = Main.embed(document.getElementById('root'),
   // FLAGS
@@ -15,10 +16,15 @@ const app = Main.embed(document.getElementById('root'),
 app.ports.measureContent.subscribe(function(msg) {
   window.requestAnimationFrame(function() {
     const container = document.getElementById(msg.containerId);
-    const containerBorderHeight = parseInt(getComputedStyle(container).getPropertyValue('border-top-width'), 10);
-    const tab = document.getElementById(msg.containerId + "-" + msg.contentId);
-    const tabHeight = tab.offsetHeight;
-    msg.newHeight = tabHeight;
+    const content = document.getElementById(msg.containerId + "-" + msg.contentId);
+
+    if (msg.fadeContentId != "") {
+      const fadeOutContent = document.getElementById(msg.containerId + "-" + msg.fadeContentId);
+      msg.oldHeight = fadeOutContent.parentElement.offsetHeight;
+    } else {
+      msg.oldHeight = 0;
+    }
+    msg.newHeight = content.offsetHeight;
     app.ports.newContentHeight.send(msg)
   })
 })

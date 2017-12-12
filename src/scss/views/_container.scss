@@ -10,22 +10,22 @@
   margin-bottom: 0;
   margin-top: 0;
   list-style: none;
-  background-color: white;
+  background-color: #E9EDF0;
   border-bottom: 2px solid #ddd;
 }
 
 .link {
   flex: 1 1 100%;
   text-align: center;
-  border: 1px solid #ddd;
-  border-top-right-radius: .25rem;
-  border-top-left-radius: .25rem;
+  border: 3px solid #ddd;
+  // border-top-right-radius: .25rem;
+  // border-top-left-radius: .25rem;
   display: block;
   padding: .5em 1em;
 }
 
 .link a {
-  color: blue;
+  color: black;
   text-decoration: none;
 }
 
@@ -42,15 +42,22 @@
 * animations and stuff to make the containers resize
 */
 
-.container {
-  position: relative;
-  transition: height .7s cubic-bezier(0.86, 0, 0.07, 1) .3s;
-  background-color: #E9EDF0;
+.container-title {
+    font-size: 20;
+    height: 40px;
+    margin-top: 20px;
+    background-color: white;
+    border: 3px solid #ddd;
 }
 
-.container.active {
-  border: 6px solid #385265;
-  animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
+.container-title h1 {
+    -webkit-margin-before: 0;
+}
+
+.container {
+  position: relative;
+  transition: height .5s cubic-bezier(0.86, 0, 0.07, 1) .3s;
+  height: 0px;
 }
 
 .content {
@@ -62,12 +69,16 @@
 }
 
 .content.fade-out {
-  animation: fadeOut .7s cubic-bezier(0.86, 0, 0.07, 1);
+  transition: opacity .7s cubic-bezier(0.86, 0, 0.07, 1);
 }
 
 .content.active {
-  animation: fadeIn 1.5s cubic-bezier(0.86, 0, 0.07, 1);
+  transition: opacity 1.5s cubic-bezier(0.86, 0, 0.07, 1);
   opacity: 1;
+  position: relative;
+  top: initial;
+  left: initial;
+  width: initial;
 }
 
 .content.hidden {

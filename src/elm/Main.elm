@@ -87,10 +87,9 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ TopNav.view AccountMenu.view
-        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
-
-        -- , Html.map AppDashMsg <| AppDash.view model.appDash
+        [ -- TopNav.view model.logoPath AccountMenu.view
+          -- , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
+          Html.map AppDashMsg <| AppDash.view model.appDash
         ]
 
 

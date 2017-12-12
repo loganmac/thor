@@ -7,11 +7,11 @@ import Html.Attributes exposing (alt, class, src)
 -- VIEW
 
 
-view : Html msg -> Html msg
-view inner =
+view : String -> Html msg -> Html msg
+view logoPath inner =
     div [ class "top-nav" ]
         [ div [ class "logo" ]
-            [ img [ src "src/svg/logo.svg" ] []
+            [ img [ src logoPath ] []
             , div [ class "txt caps" ] [ text "Nanobox" ]
             ]
         , div [ class "link caps" ]
