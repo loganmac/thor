@@ -11,9 +11,9 @@ import Maybe.Extra exposing (isJust)
 type alias Container =
     { id : Id
     , parentId : ParentId
-    , activeContentId : Maybe String
-    , fadeInContentId : Maybe String
-    , fadeOutContentId : Maybe String
+    , activeContentId : Maybe ContentId
+    , fadeInContentId : Maybe ContentId
+    , fadeOutContentId : Maybe ContentId
     , height : Float
     }
 
@@ -25,6 +25,7 @@ type alias Container =
 type alias FadeOutMsg =
     { containerId : Id
     , contentId : ContentId
+    , oldContentId : ContentId
     , parentId : ParentId
     }
 
@@ -94,7 +95,7 @@ contentView : Container -> Int -> Html msg -> Html msg
 contentView container index content =
     let
         contentId =
-            "content-" ++ toString (index + 1)
+            toString (index + 1)
 
         is check =
             contentId == Maybe.withDefault "" (check container)
@@ -119,9 +120,12 @@ contentView container index content =
 {-| Utility to determine whether the content is already
 the active content of the container
 -}
-activeContentId : Id -> ContentId -> Containers -> Id
-activeContentId containerId contentId containers =
-    Maybe.withDefault "" <| .activeContentId <| get containerId "" containers
+alreadyActive : ContentId -> ContentId -> ContentId
+alreadyActive contentId activeContentId =
+    if contentId == activeContentId then
+        ""
+    else
+        contentId
 
 
 {-| Utility for updating a container in a group (dictionary)
@@ -196,14 +200,25 @@ fadeOut { containerId, contentId, parentId } containers =
     let
         oldContainer =
             get containerId parentId containers
+
+        updateContainer =
+            if Just contentId == oldContainer.activeContentId then
+                set
+                    { oldContainer
+                        | activeContentId = Nothing
+                        , fadeInContentId = Nothing
+                        , fadeOutContentId = oldContainer.activeContentId
+                    }
+            else
+                set
+                    { oldContainer
+                        | activeContentId = Nothing
+                        , fadeInContentId = Just contentId
+                        , fadeOutContentId = oldContainer.activeContentId
+                    }
     in
     resetSubcontainers containerId containers
-        |> set
-            { oldContainer
-                | activeContentId = Nothing
-                , fadeInContentId = Just contentId
-                , fadeOutContentId = oldContainer.activeContentId
-            }
+        |> updateContainer
 
 
 {-| updates the state of a container with a new height

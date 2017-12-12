@@ -18,13 +18,17 @@ app.ports.measureContent.subscribe(function(msg) {
     const container = document.getElementById(msg.containerId);
     const content = document.getElementById(msg.containerId + "-" + msg.contentId);
 
-    if (msg.fadeContentId != "") {
-      const fadeOutContent = document.getElementById(msg.containerId + "-" + msg.fadeContentId);
-      msg.oldHeight = fadeOutContent.parentElement.offsetHeight;
+    if (msg.contentId != "") {
+      msg.newHeight = content.offsetHeight;
+    } else {
+      msg.newHeight = 0;
+    }
+    if (msg.oldContentId != "") {
+      const oldContent = document.getElementById(msg.containerId + "-" + msg.oldContentId);
+      msg.oldHeight = oldContent.parentElement.offsetHeight;
     } else {
       msg.oldHeight = 0;
     }
-    msg.newHeight = content.offsetHeight;
     app.ports.newContentHeight.send(msg)
   })
 })

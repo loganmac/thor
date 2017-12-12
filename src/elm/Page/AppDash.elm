@@ -60,27 +60,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeOut cMsg ->
-            let
-                activeContentId =
-                    Container.activeContentId
-                        cMsg.containerId
-                        cMsg.parentId
-                        model.containers
-            in
-            if activeContentId == cMsg.contentId then
-                ( model, Cmd.none )
-            else
-                ( { model
-                    | isAnimating = True
-                    , containers = Container.fadeOut cMsg model.containers
-                  }
-                , Port.measureContent
-                    { containerId = cMsg.containerId
-                    , contentId = cMsg.contentId
-                    , parentId = cMsg.parentId
-                    , fadeContentId = activeContentId
-                    }
-                )
+            ( { model
+                | isAnimating = True
+                , containers = Container.fadeOut cMsg model.containers
+              }
+            , Port.measureContent
+                { containerId = cMsg.containerId
+                , contentId = Container.alreadyActive cMsg.contentId cMsg.oldContentId
+                , parentId = cMsg.parentId
+                , oldContentId = cMsg.oldContentId
+                }
+            )
 
         NewContentHeight cMsg ->
             ( { model
@@ -125,7 +115,7 @@ viewHost model host =
     in
     div [ class "app-dash host" ]
         [ div [ class "container-title" ] [ h1 [] [ text host.name ] ]
-        , containerLinks model container.id parentId
+        , containerLinks model container parentId
         , Container.containerView
             [ div [ class "medium-block" ] []
             , div [] <|
@@ -144,7 +134,7 @@ viewComponent model parentId component =
     in
     div [ class "app-dash component" ]
         [ div [ class "container-title" ] [ h1 [] [ text component.name ] ]
-        , containerLinks model container.id parentId
+        , containerLinks model container parentId
         , Container.containerView
             [ div [ class "large-block" ] []
             , div [ class "medium-block" ] []
@@ -165,7 +155,7 @@ viewCluster model cluster =
     in
     div [ class "app-dash cluster" ]
         [ div [ class "container-title" ] [ h1 [] [ text cluster.name ] ]
-        , containerLinks model container.id parentId
+        , containerLinks model container parentId
         , Container.containerView
             [ div [ class "small-block" ] []
             , div [ class "medium-block" ] []
@@ -175,18 +165,20 @@ viewCluster model cluster =
         ]
 
 
-containerLinks : Model -> Container.Id -> Container.ParentId -> Html Msg
-containerLinks model containerId parentId =
+containerLinks : Model -> Container.Container -> Container.ParentId -> Html Msg
+containerLinks model container parentId =
     ul [ class "links" ] <|
-        List.map (viewLink model containerId parentId)
-            [ "content-1", "content-2", "content-3" ]
+        List.map (viewLink model container parentId) [ "1", "2", "3" ]
 
 
-viewLink : Model -> Container.Id -> Container.ContentId -> Container.ParentId -> Html Msg
-viewLink model containerId parentId contentId =
+viewLink : Model -> Container.Container -> Container.ContentId -> Container.ParentId -> Html Msg
+viewLink model container parentId contentId =
     let
         link =
-            "#" ++ containerId ++ contentId
+            "#" ++ container.id ++ contentId
+
+        oldContentId =
+            Maybe.withDefault "" container.activeContentId
 
         click =
             if model.isAnimating then
@@ -194,8 +186,9 @@ viewLink model containerId parentId contentId =
             else
                 onClick <|
                     FadeOut
-                        { containerId = containerId
+                        { containerId = container.id
                         , contentId = contentId
+                        , oldContentId = oldContentId
                         , parentId = parentId
                         }
     in

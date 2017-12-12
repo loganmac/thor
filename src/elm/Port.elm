@@ -7,7 +7,7 @@ port module Port exposing (..)
 port measureContent :
     { containerId : String
     , contentId : String
-    , fadeContentId : String
+    , oldContentId : String
     , parentId : String
     }
     -> Cmd msg
