@@ -86,7 +86,7 @@ update msg model =
             ( { model
                 | containers = Container.newContentHeights cMsg model.containers
               }
-            , Util.wait (Time.second * 1) <|
+            , Util.wait (Time.second * 0.7) <|
                 FadeIn { containerId = cMsg.containerId, parentId = cMsg.parentId }
             )
 
