@@ -17,3 +17,16 @@ wait time msg =
 send : msg -> Cmd msg
 send msg =
     Task.succeed msg |> Task.perform identity
+
+
+{-| infix operator for tuples, makes them appear a lot nicer.
+-}
+(=>) : a -> b -> ( a, b )
+(=>) =
+    (,)
+
+
+{-| infixl 0 means the (=>) operator has the same precedence as (<|) and (|>),
+meaning you can use it at the end of a pipeline and have the precedence work out.
+-}
+infixl 0 =>

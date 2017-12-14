@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (Html, div, h1, img, text)
+import Html.Attributes exposing (class)
 import Page.AppAdmin as AppAdmin
 import Page.AppDash as AppDash
 import View.AccountMenu as AccountMenu
@@ -11,7 +12,7 @@ import View.TopNav as TopNav
 
 
 type alias Model =
-    { logoPath : String
+    { topNav : TopNav.Model
     , appAdmin : AppAdmin.Model
     , appDash : AppDash.Model
     }
@@ -19,7 +20,17 @@ type alias Model =
 
 type alias Flags =
     { logoPath : String
+    , homeLogoPath : String
+    , supportLogoPath : String
     }
+
+
+type TopPage appId accountId teamId
+    = Dashboard
+    | NewApp
+    | App appId
+    | AccountAdmin accountId
+    | TeamAdmin teamId
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -31,7 +42,11 @@ init flags =
         ( appDash, appDashCmd ) =
             AppDash.init
     in
-    ( { logoPath = flags.logoPath
+    ( { topNav =
+            { logoPath = flags.logoPath
+            , homeLogoPath = flags.homeLogoPath
+            , supportLogoPath = flags.supportLogoPath
+            }
       , appAdmin = appAdmin
       , appDash = appDash
       }
@@ -86,10 +101,11 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ -- TopNav.view model.logoPath AccountMenu.view
-          -- , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
-          Html.map AppDashMsg <| AppDash.view model.appDash
+    div [ class "dashboard" ]
+        [ TopNav.view model.topNav AccountMenu.view
+        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
+
+        -- Html.map AppDashMsg <| AppDash.view model.appDash
         ]
 
 

@@ -1,0 +1,43 @@
+.top-nav {
+  @extend .font-caps;
+  display: flex;
+  align-items: center;
+  .logo {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: auto;
+    img {
+      width: 45px;
+    }
+    .txt {
+      font-size: 21px;
+      font-weight: $semibold;
+      color: $canvas-6;
+      margin-left: 20px;
+      letter-spacing: 0.15em;
+    }
+    &:hover {
+      .txt {
+        color : $lake;
+      }
+    }
+  }
+  .link {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: $code-bg;
+    margin: 0 15px;
+    cursor: pointer;
+    img {
+      width: 10px;
+      margin-right: 7px;
+    }
+    &:hover {
+      .txt {
+        color : $lake;
+      }
+    }
+  }
+}

@@ -7,11 +7,11 @@
     "auto_reconfigure": false,
     "config": null,
     "provider_id": "711714ac-737c-4e23-af73-d598431a0696",
-    "provider_name": "Heroku",
+    "provider_name": "Amazon Web Services",
     "provider_icon": "aws",
     "provider_endpoint": null,
     "platform_id": "d1ebdc90-22a0-4fc7-9ee7-0127260f8600",
-    "platform_region": "Us-west-1",
+    "platform_region": "US-west-1",
     "group_id": "30bce79d-9e19-4b65-9555-5050746abada",
     "group_name": "Group 1"
   }, {

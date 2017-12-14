@@ -4,7 +4,7 @@
 * Just CSS to make the link elements look pretty :)
 */
 
-.links {
+.container-links {
   display: flex;
   padding-left: 0;
   margin-bottom: 0;
@@ -14,7 +14,7 @@
   border-bottom: 2px solid #ddd;
 }
 
-.link {
+.container-link {
   flex: 1 1 100%;
   text-align: center;
   border: 3px solid #ddd;
@@ -22,7 +22,7 @@
   padding: .5em 1em;
 }
 
-.link a {
+.container-link a {
   color: black;
   text-decoration: none;
 }
@@ -51,7 +51,7 @@
   height: 0px;
 }
 
-.content {
+.container-content {
   position: absolute;
   top: 0;
   left: 0;
@@ -59,17 +59,17 @@
   opacity: 0;
 }
 
-.content.fade-out {
+.container-content.fade-out {
   transition: opacity .7s cubic-bezier(0.86, 0, 0.07, 1);
 }
 
-.content.active {
+.container-content.active {
   transition: opacity .7s cubic-bezier(0.86, 0, 0.07, 1);
   opacity: 1;
   position: relative;
 }
 
-.content.hidden {
+.container-content.hidden {
   display: none;
 }
 

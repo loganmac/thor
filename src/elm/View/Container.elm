@@ -112,7 +112,7 @@ contentView container index content =
     in
     div
         ([ id (container.id ++ "-" ++ contentId) ]
-            ++ [ class ("content" ++ displayClass) ]
+            ++ [ class ("container-content" ++ displayClass) ]
         )
         [ content ]
 

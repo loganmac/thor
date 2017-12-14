@@ -1,10 +1,12 @@
 module Page.AppAdmin exposing (..)
 
 import Data.App as App exposing (App)
-import Html exposing (Attribute, Html, div, h2, input, label, text)
-import Html.Attributes exposing (class, disabled, placeholder, value)
+import Html exposing (Attribute, Html, div, form, h2, input, label, text)
+import Html.Attributes exposing (class, disabled, for, id, placeholder, required, type_, value)
 import Http
+import Util exposing ((=>))
 import View.Corral as Corral
+import View.Material as Material
 
 
 -- MODEL
@@ -19,12 +21,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { app = App.initialModel
-      , corral =
-            { title = "App Admin"
-            , nav = [ "Info", "Ownership", "Deploy", "Update", "Security", "Delete" ]
-            , value = "App Admin"
-            , activeItem = "Info"
-            }
+      , corral = { activeItem = "App Info" }
       }
     , App.getApp "c3bff5fd-ce3e-4bfb-8ecc-f43714a3fc44" GetAppResponse
     )
@@ -64,8 +61,14 @@ update msg ({ corral } as model) =
 view : Model -> Html Msg
 view model =
     div [ class "app-admin" ]
-        [ Corral.view model.corral CorralItemClicked <|
-            div [ class "tab-content" ] [ activeTab model ]
+        [ Corral.view model.corral "App Admin" CorralItemClicked <|
+            [ "Info" => viewAppInfo model
+            , "Ownership" => div [] []
+            , "Deploy" => div [] []
+            , "Update" => div [] []
+            , "Security" => div [] []
+            , "Delete" => div [] []
+            ]
         ]
 
 
@@ -76,20 +79,15 @@ navItem txt =
         ]
 
 
-activeTab : Model -> Html Msg
-activeTab model =
+viewAppInfo : Model -> Html msg
+viewAppInfo model =
     div []
         [ h2 [] [ text "App Info" ]
-        , label []
-            [ text "Name"
-            , input [ placeholder "App Name" ] []
-            ]
-        , label []
-            [ text "Provider"
-            , input [ disabled True, placeholder "Provider", value model.app.providerName ] []
-            ]
-        , label []
-            [ text "Region"
-            , input [ disabled True, placeholder "Region", value model.app.platformRegion ] []
-            ]
+        , label [] [ text "Name" ]
+        , input [ type_ "text", placeholder "App Name", value model.app.name ] []
+        , label [] [ text "Provider" ]
+        , input [ type_ "text", disabled True, placeholder "Provider", value model.app.providerName ] []
+        , label [] [ text "Region" ]
+        , input [ type_ "text", disabled True, placeholder "Region", value model.app.platformRegion ] []
+        , Material.input [] [ text "Material" ]
         ]

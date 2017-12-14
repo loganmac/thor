@@ -167,7 +167,7 @@ viewCluster model cluster =
 
 containerLinks : Model -> Container.Container -> Container.ParentId -> Html Msg
 containerLinks model container parentId =
-    ul [ class "links" ] <|
+    ul [ class "container-links" ] <|
         List.map (viewLink model container parentId) [ "1", "2", "3" ]
 
 
@@ -193,5 +193,5 @@ viewLink model container parentId contentId =
                         }
     in
     li
-        [ class "link", click ]
+        [ class "container-link", click ]
         [ a [ href <| link ] [ text contentId ] ]

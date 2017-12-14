@@ -4,22 +4,33 @@ import Html exposing (Attribute, Html, div, img, text)
 import Html.Attributes exposing (alt, class, src)
 
 
+-- MODEL
+
+
+type alias Model =
+    { logoPath : String
+    , homeLogoPath : String
+    , supportLogoPath : String
+    }
+
+
+
 -- VIEW
 
 
-view : String -> Html msg -> Html msg
-view logoPath inner =
+view : Model -> Html msg -> Html msg
+view model inner =
     div [ class "top-nav" ]
         [ div [ class "logo" ]
-            [ img [ src logoPath ] []
+            [ img [ src model.logoPath ] []
             , div [ class "txt caps" ] [ text "Nanobox" ]
             ]
-        , div [ class "link caps" ]
-            [ img [ src "src/svg/home.svg" ] []
+        , div [ class "link" ]
+            [ img [ src model.homeLogoPath ] []
             , div [ class "txt" ] [ text "Home" ]
             ]
-        , div [ class "link caps" ]
-            [ img [ src "src/svg/support.svg" ] []
+        , div [ class "link" ]
+            [ img [ src model.supportLogoPath ] []
             , div [ class "txt" ] [ text "Support" ]
             ]
         , inner

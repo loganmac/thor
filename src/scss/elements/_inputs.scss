@@ -1,0 +1,55 @@
+.material-input-box {
+  position: relative;
+}
+
+label {
+  @extend .font-base;
+  font-size: 11px;
+  font-weight: $bold;
+  color: $canvas-7;
+
+  margin-bottom: 5px;
+  display: block;
+}
+
+input[type="text"] {
+  @extend .font-normal;
+  font-style: italic;
+  font-size: 17px;
+  color: $slate;
+
+  border: none;
+  height: 45px;
+  text-indent: 10px;
+  margin-bottom: 20px;
+  display: block;
+
+  &.material-input {
+    border-bottom: 3px solid $blue-5;
+    background-color: transparent;
+    &~ label {
+      font-size: 16px;
+      font-weight: $semibold;
+      color: $blue-5;
+      transition:0.2s ease all;
+      position: absolute;
+      left: 5px;
+      top: 20px;
+    }
+    &:focus, {
+      outline: none;
+      &~ label {
+        top: -10px;
+        font-size: 11px;
+      }
+    }
+    &:valid ~ label, {
+      top: -10px;
+      font-size: 11px;
+    }
+  }
+
+  &:disabled {
+    background-color: $canvas-9;
+  }
+}

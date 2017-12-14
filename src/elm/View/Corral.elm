@@ -1,42 +1,58 @@
 module View.Corral exposing (..)
 
 import Html exposing (Attribute, Html, div, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Util exposing ((=>))
 
 
 -- MODEL
 
 
 type alias Corral =
-    { title : String
-    , nav : List String
-    , value : String
-    , activeItem : String
+    { activeItem : String
     }
+
+
+type alias Id =
+    String
 
 
 
 -- VIEW
 
 
-view : Corral -> (String -> msg) -> Html msg -> Html msg
-view model itemClick inner =
+view : Corral -> String -> (Id -> msg) -> List ( Id, Html msg ) -> Html msg
+view model title toMsg inner =
     div [ class "corral" ]
-        [ div [ class "corral-nav" ]
-            [ div [ class "corral-section-title" ]
-                [ text model.title ]
-            , div [ class "corral-nav-bar" ] <| List.map (navItem itemClick) model.nav
+        [ div [ class "nav" ]
+            [ div [ class "section-title" ]
+                [ text title ]
+            , div [ class "nav-bar" ] <|
+                List.map (viewNavItem model toMsg) inner
             ]
-        , div [ class "corral-content" ]
-            [ div [ class "corral-section-title" ] [ text model.activeItem ]
-            , inner
+        , div [ class "content" ]
+            [ div [ class "section-title" ] [ text model.activeItem ]
+            , div [ class "content" ] <|
+                List.map viewTabContent <|
+                    List.filter (\( i, _ ) -> model.activeItem == i) inner
             ]
         ]
 
 
-navItem : (String -> msg) -> String -> Html msg
-navItem toMsg txt =
-    div [ class "corral-nav-item", onClick <| toMsg txt ]
-        [ text txt
+viewNavItem : Corral -> (Id -> msg) -> ( Id, Html msg ) -> Html msg
+viewNavItem model toMsg ( id, _ ) =
+    div
+        [ classList
+            [ "nav-item" => True
+            , "active" => id == model.activeItem
+            ]
+        , onClick <| toMsg id
         ]
+        [ text id ]
+
+
+viewTabContent : ( Id, Html msg ) -> Html msg
+viewTabContent ( id, content ) =
+    div [ class "content-item" ]
+        [ content ]

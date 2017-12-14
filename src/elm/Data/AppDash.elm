@@ -74,39 +74,3 @@ initialModel =
           }
         ]
     }
-
-
-
---
--- decoder : Decoder AppDash
--- decoder =
---     decode AppDash
---         |> required "id" Decode.string
---         |> required "name" Decode.string
---         |> required "timezone" Decode.string
---         |> required "state" Decode.string
---         |> required "auto_reconfigure" Decode.bool
---         |> required "config" (nullable Decode.string)
---         |> required "provider_id" Decode.string
---         |> required "provider_name" Decode.string
---         |> required "provider_icon" Decode.string
---         |> required "provider_endpoint" (nullable Decode.string)
---         |> required "platform_id" Decode.string
---         |> required "platform_region" Decode.string
---         |> required "group_id" Decode.string
---         |> required "group_name" Decode.string
---
---
---
--- -- REQUESTS
--- -- GET
---
---
--- appDashUrl : String -> String
--- appDashUrl appId =
---     apiUrl <| "apps/" ++ appId
---
---
--- getAppDash : String -> (Result Http.Error AppDash -> msg) -> Cmd msg
--- getAppDash appId msg =
---     Http.send msg <| Http.get (appDashUrl appId) decoder
