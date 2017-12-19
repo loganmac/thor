@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html, a, div, li, text, ul)
 import Html.Attributes exposing (class, classList, disabled, href, id, style)
 import Maybe.Extra exposing (isJust)
+import Util exposing ((=>))
 
 
 {-| Container is the element that flexes to fit its inner contents
@@ -99,29 +100,24 @@ contentView container index content =
 
         is check =
             contentId == Maybe.withDefault "" (check container)
-
-        displayClass =
-            if is .activeContentId then
-                " active"
-            else if is .fadeInContentId then
-                " fade-in"
-            else if is .fadeOutContentId then
-                " fade-out"
-            else
-                " hidden"
     in
     div
-        ([ id (container.id ++ "-" ++ contentId) ]
-            ++ [ class ("container-content" ++ displayClass) ]
-        )
+        [ id (container.id ++ "-" ++ contentId)
+        , classList
+            [ "container-content" => True
+            , "active" => is .activeContentId
+            , "fade-in" => is .fadeInContentId
+            , "fade-out" => is .fadeOutContentId
+            ]
+        ]
         [ content ]
 
 
-{-| Utility to determine whether the content is already
+{-| Utility to toggle if the content is already
 the active content of the container
 -}
-alreadyActive : ContentId -> ContentId -> ContentId
-alreadyActive contentId activeContentId =
+toggleActive : ContentId -> ContentId -> ContentId
+toggleActive contentId activeContentId =
     if contentId == activeContentId then
         ""
     else
@@ -181,7 +177,7 @@ resetSubcontainers id containers =
     set the clicked contentId to fadingIn
     set the activeContentId to fading out
     set isAnimating to true (to debounce)
-    clear out the state of any subcontainers TODO: this
+    clear out the state of any subcontainers
     call out to port to measure the height of the contentId that was just clicked.
   NewContentHeight ->
     this is received from a port, the callback after we told JS to measure content.
@@ -225,28 +221,29 @@ fadeOut { containerId, contentId, parentId } containers =
 , and reduces the size of the parentContainer with the oldHeight
 -}
 newContentHeights : NewContentHeightsMsg -> Containers -> Containers
-newContentHeights msg containers =
+newContentHeights { containerId, parentId, newHeight, oldHeight } containers =
     let
         oldContainer =
-            get msg.containerId msg.parentId containers
+            get containerId parentId containers
 
         parentContainer =
-            get msg.parentId "" containers
+            get parentId "" containers
 
         parentHeight =
-            msg.newHeight + parentContainer.height - msg.oldHeight
+            newHeight + parentContainer.height - oldHeight
     in
-    set { parentContainer | height = parentHeight } <|
-        set { oldContainer | height = msg.newHeight } containers
+    containers
+        |> set { oldContainer | height = newHeight }
+        |> set { parentContainer | height = parentHeight }
 
 
 {-| updates the state of a container to fade it in
 -}
 fadeIn : FadeInMsg -> Containers -> Containers
-fadeIn msg containers =
+fadeIn { containerId, parentId } containers =
     let
         oldContainer =
-            get msg.containerId msg.parentId containers
+            get containerId parentId containers
     in
     set
         { oldContainer

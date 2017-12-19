@@ -1,0 +1,9 @@
+.basic-label {
+  @extend .font-base;
+  font-size: 11px;
+  font-weight: $bold;
+  color: $canvas-7;
+
+  margin-bottom: 5px;
+  display: block;
+}

@@ -1,11 +1,17 @@
 // VARIABLES
 @import "variables/colors.scss";
 @import "variables/fonts.scss";
+// MIXINS
+@import "mixins/checkmark.scss";
+@import "mixins/thin-shadow.scss";
 // ELEMENTS
 @import "elements/buttons.scss";
+@import "elements/checkboxes.scss";
 @import "elements/inputs.scss";
+@import "elements/labels.scss";
+@import "elements/selects.scss";
 // PAGES
-// @import "pages/";
+@import "pages/app-admin";
 // VIEWS
 @import "views/container.scss";
 @import "views/corral.scss";

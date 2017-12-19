@@ -1,0 +1,44 @@
+.checkbox {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 0;
+
+  .checker {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    background: white;
+    display: inline-block;
+    border-radius: 2px;
+    margin: 0 6px 0 0;
+    @include thin-shadow;
+  }
+
+  .label {
+    @extend .font-normal;
+    font-style: italic;
+    strong {
+      font-style: normal;
+    }
+  }
+
+  &.checked {
+    .checker {
+      background: $blue-8;
+
+      &:after {
+        @include checkmark(11px, $white, 3px);
+        position: absolute;
+        left: 5px;
+        top: -2px;
+      }
+    }
+  }
+
+  &:hover {
+    .label {
+      color: $blue-5;
+    }
+  }
+}

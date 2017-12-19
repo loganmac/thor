@@ -43,7 +43,10 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Port.newContentHeight NewContentHeight
+    Sub.batch
+        [ Port.newContentHeight NewContentHeight
+        , Sub.none
+        ]
 
 
 
@@ -59,34 +62,33 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FadeOut cMsg ->
-            ( { model
+        FadeOut ({ containerId, contentId, oldContentId, parentId } as cMsg) ->
+            { model
                 | isAnimating = True
                 , containers = Container.fadeOut cMsg model.containers
-              }
-            , Port.measureContent
-                { containerId = cMsg.containerId
-                , contentId = Container.alreadyActive cMsg.contentId cMsg.oldContentId
-                , parentId = cMsg.parentId
-                , oldContentId = cMsg.oldContentId
-                }
-            )
+            }
+                ! [ Port.measureContent
+                        { containerId = containerId
+                        , contentId = Container.toggleActive contentId oldContentId
+                        , parentId = parentId
+                        , oldContentId = oldContentId
+                        }
+                  ]
 
-        NewContentHeight cMsg ->
-            ( { model
+        NewContentHeight ({ containerId, parentId } as cMsg) ->
+            { model
                 | containers = Container.newContentHeights cMsg model.containers
-              }
-            , Util.wait (Time.second * 0.7) <|
-                FadeIn { containerId = cMsg.containerId, parentId = cMsg.parentId }
-            )
+            }
+                ! [ Util.wait (Time.second * 0.7) <|
+                        FadeIn { containerId = containerId, parentId = parentId }
+                  ]
 
         FadeIn cMsg ->
-            ( { model
+            { model
                 | isAnimating = False
                 , containers = Container.fadeIn cMsg model.containers
-              }
-            , Cmd.none
-            )
+            }
+                ! []
 
 
 

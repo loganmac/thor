@@ -32,11 +32,10 @@
       margin-left: -12px;
 
       .nav-item {
-        @extend .font-base;
-        font-style: italic;
+        @extend .font-normal;
         font-weight: $bold;
         font-size: 16px;
-        color: $blue-a;
+        color: $temp-blue-grey;
 
         position: relative;
         display: flex;
@@ -54,7 +53,7 @@
 
         &.active {
           background: $off-white;
-          color: $blue-5;
+          color: $temp-blue-grey-a;
           @include pointer;
         }
       }
@@ -63,5 +62,6 @@
 
   .content {
     flex-grow: 1;
+    max-width: 618px; // FIXME: kind of hacky, we want a column system probably.
   }
 }

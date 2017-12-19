@@ -1,0 +1,111 @@
+.app-admin {
+  .app-info {
+    input {
+      width: 100%;
+    }
+
+    .save-section {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+
+      &.hidden {
+        opacity: 0;
+      }
+    }
+  }
+
+  .app-ownership {
+    .view-ownership {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 50px auto;
+      > * {
+        flex: 1;
+        margin: 10px;
+      }
+    }
+    .change-ownership {
+      .txt {
+        @extend .font-normal;
+      }
+      .section {
+        margin: 20px 0px;
+        .save-section {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          margin: 30px 0px;
+
+          &.hidden {
+            opacity: 0;
+          }
+        }
+        .important {
+          color: $hot;
+        }
+        strong {
+          color: $hot;
+        }
+        select {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .app-update {
+    .section {
+      @extend .font-normal;
+      display: flex;
+      align-items: center;
+      padding: 30px 0;
+      white-space: pre-line;
+
+      .basic-button {
+        white-space: nowrap;
+      }
+
+      .button-text {
+        margin-left: 60px;
+      }
+    }
+  }
+
+  .app-security {
+    margin-right: 70px;
+    .blurb {
+      @extend .font-normal;
+
+      strong {
+        font-style: normal;
+      }
+
+      a {
+        color: $blue-9;
+      }
+    }
+    .section {
+      margin: 30px 0px;
+
+      .code-box {
+        @extend .font-code-yellow;
+        word-wrap: break-word;
+
+        strong {
+          @extend .font-code-blue;
+        }
+        .code {
+          padding: 20px;
+        }
+      }
+    }
+    hr {
+      border: none;
+      margin: 40px 0;
+      border-bottom: 1px solid $canvas-8;
+    }
+  }
+}

@@ -1,19 +1,29 @@
 .basic-button {
-    background-color: $blue;
-    font-weight: $medium;
+    @extend .font-normal;
     font-size: 15px;
+    background-color: $blue;
+    color : $white;
+    height: 40px;
+    padding: 0px 30px;
     &:hover {
       background-color: $blue-5;
     }
 
-    .danger {
+    &.danger {
       background-color: $red;
       &:hover {
         background-color: $red;
       }
     }
 
-    .disabled {
+    &.cancel {
+      color: $canvas-6;
+      font-size: 14px;
+      background-color: transparent;
+      border: none;
+      outline: none;
+    }
+    &.disabled {
       background-color: $canvas-9;
       color: $canvas-6;
       pointer-events: none;

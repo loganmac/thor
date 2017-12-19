@@ -17,6 +17,7 @@ $proxima: "proxima-nova", Helvetica, sans-serif;
 .font-normal {
   @extend .font-base;
   font-size: 14px;
+  font-style: italic;
   font-weight: $medium;
   line-height: 1.5;
 }
@@ -28,6 +29,24 @@ $proxima: "proxima-nova", Helvetica, sans-serif;
   line-height: 1.5;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.font-code {
+  @extend .font-base;
+  font-size: 13px;
+  font-weight: $bold;
+  font-family: $code;
+  background-color: $code-bg;
+}
+
+.font-code-yellow {
+  @extend .font-code;
+  color: $code-yellow;
+}
+
+.font-code-blue {
+  @extend .font-code;
+  color: $code-blue;
 }
 
 // PROXIMA NOVA:

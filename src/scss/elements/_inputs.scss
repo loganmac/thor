@@ -2,20 +2,10 @@
   position: relative;
 }
 
-label {
-  @extend .font-base;
-  font-size: 11px;
-  font-weight: $bold;
-  color: $canvas-7;
-
-  margin-bottom: 5px;
-  display: block;
-}
-
 input[type="text"] {
   @extend .font-normal;
-  font-style: italic;
   font-size: 17px;
+  font-weight: $semibold;
   color: $slate;
 
   border: none;

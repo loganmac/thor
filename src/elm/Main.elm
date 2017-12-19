@@ -1,7 +1,9 @@
 module Main exposing (..)
 
+import Data.App as App exposing (App)
 import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (class)
+import Http
 import Page.AppAdmin as AppAdmin
 import Page.AppDash as AppDash
 import View.AccountMenu as AccountMenu
@@ -12,7 +14,8 @@ import View.TopNav as TopNav
 
 
 type alias Model =
-    { topNav : TopNav.Model
+    { app : App
+    , topNav : TopNav.Model
     , appAdmin : AppAdmin.Model
     , appDash : AppDash.Model
     }
@@ -42,7 +45,8 @@ init flags =
         ( appDash, appDashCmd ) =
             AppDash.init
     in
-    ( { topNav =
+    ( { app = App.initialModel
+      , topNav =
             { logoPath = flags.logoPath
             , homeLogoPath = flags.homeLogoPath
             , supportLogoPath = flags.supportLogoPath
@@ -53,6 +57,7 @@ init flags =
     , Cmd.batch
         [ Cmd.map AppAdminMsg appAdminCmd
         , Cmd.map AppDashMsg appDashCmd
+        , App.getApp "c3bff5fd-ce3e-4bfb-8ecc-f43714a3fc44" GetAppResponse
         ]
     )
 
@@ -64,6 +69,7 @@ init flags =
 type Msg
     = AppAdminMsg AppAdmin.Msg
     | AppDashMsg AppDash.Msg
+    | GetAppResponse (Result Http.Error App)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,14 +80,20 @@ update msg model =
                 ( updated, cmd ) =
                     AppAdmin.update subMsg model.appAdmin
             in
-            ( { model | appAdmin = updated }, Cmd.map AppAdminMsg cmd )
+            { model | appAdmin = updated } ! [ Cmd.map AppAdminMsg cmd ]
 
         AppDashMsg subMsg ->
             let
                 ( updated, cmd ) =
                     AppDash.update subMsg model.appDash
             in
-            ( { model | appDash = updated }, Cmd.map AppDashMsg cmd )
+            { model | appDash = updated } ! [ Cmd.map AppDashMsg cmd ]
+
+        GetAppResponse (Ok app) ->
+            { model | app = app } ! []
+
+        GetAppResponse (Err error) ->
+            model ! []
 
 
 
@@ -103,9 +115,9 @@ view : Model -> Html Msg
 view model =
     div [ class "dashboard" ]
         [ TopNav.view model.topNav AccountMenu.view
-        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin
+        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin model.app
 
-        -- Html.map AppDashMsg <| AppDash.view model.appDash
+        -- , Html.map AppDashMsg <| AppDash.view model.appDash
         ]
 
 

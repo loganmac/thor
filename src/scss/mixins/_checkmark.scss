@@ -1,0 +1,16 @@
+@mixin checkmark($check-size:10px, $check-color:$azul2, $line-width:2px) {
+  /*Add another block-level blank space*/
+  content: '';
+  display: block;
+
+  /*Make it a small rectangle so the border will create an L-shape*/
+  width: $check-size/2;
+  height: $check-size;
+
+  /*Add a white border on the bottom and left, creating that 'L' */
+  border: solid $check-color;
+  border-width: 0 $line-width $line-width 0;
+
+  /*Rotate the L 45 degrees to turn it into a checkmark*/
+  transform: rotate(45deg);
+}
