@@ -23,7 +23,6 @@
       align-items: center;
       margin: 50px auto;
       > * {
-        flex: 1;
         margin: 10px;
       }
     }
@@ -52,6 +51,19 @@
         select {
           width: 100%;
         }
+      }
+    }
+  }
+
+  .app-deploy {
+    .save-section {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin: 30px 0px;
+
+      &.hidden {
+        opacity: 0;
       }
     }
   }
@@ -106,6 +118,39 @@
       border: none;
       margin: 40px 0;
       border-bottom: 1px solid $canvas-8;
+    }
+  }
+
+  .app-delete {
+    background-color: $danger;
+    color: $white;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    border-radius: 4px;
+    .warning {
+      font-size: 24px;
+      font-weight: $bold;
+      margin: 30px 0px;
+      strong {
+        position: relative;
+        font-size: 36px;
+        margin: 0px 20px;
+        bottom: 7px;
+      }
+    }
+    .subtext {
+      width: 100%;
+      text-align: center;
+      font-weight: $bold;
+      background-color: $danger-dark;
+      color: $danger;
+      align-items: center;
+      padding: 20px 0px;
+    }
+    .basic-button {
+      margin: 50px 0px;
     }
   }
 }

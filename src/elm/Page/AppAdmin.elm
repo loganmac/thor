@@ -20,7 +20,10 @@ type alias Model =
     , newAppName : Maybe String
     , ownership : Ownership
     , newOwner : Maybe String
-    , shouldBoxfileUpdate : Bool
+    , shouldBoxfileUpdate : Maybe Bool
+    , settings :
+        { shouldBoxfileUpdate : Bool
+        }
     }
 
 
@@ -35,7 +38,8 @@ init =
       , newAppName = Nothing
       , ownership = Default
       , newOwner = Nothing
-      , shouldBoxfileUpdate = True
+      , shouldBoxfileUpdate = Nothing
+      , settings = { shouldBoxfileUpdate = True }
       }
     , Cmd.none
     )
@@ -54,7 +58,9 @@ type Msg
     | CancelTransferOwnership
     | SaveTransferOwnership
     | SaveNewAppName
-    | ToggleBoxfileUpdate
+    | ToggleBoxfileUpdate Bool
+    | CancelDeploySettings
+    | SaveDeploySettings Bool
     | UpdateAgent
     | SyncProvider
 
@@ -98,8 +104,19 @@ update msg ({ corral } as model) =
             { model | newAppName = Nothing } ! []
 
         -- TODO: Make http request once endpoint documentation exists.
-        ToggleBoxfileUpdate ->
-            { model | shouldBoxfileUpdate = not model.shouldBoxfileUpdate } ! []
+        ToggleBoxfileUpdate bool ->
+            { model | shouldBoxfileUpdate = Just bool } ! []
+
+        CancelDeploySettings ->
+            { model | shouldBoxfileUpdate = Nothing } ! []
+
+        -- TODO: Make http request once endpoint documentation exists.
+        SaveDeploySettings bool ->
+            { model
+                | shouldBoxfileUpdate = Nothing
+                , settings = { shouldBoxfileUpdate = bool }
+            }
+                ! []
 
         -- TODO: Make http request once endpoint documentation exists.
         UpdateAgent ->
@@ -254,13 +271,38 @@ viewTransferOptions model name =
 
 viewDeploy : Model -> App -> Html Msg
 viewDeploy model app =
+    let
+        -- TODO: Get settings here from API
+        saveButtons shouldUpdate =
+            div [ class "save-section" ]
+                [ button
+                    [ class "basic-button cancel"
+                    , onClick CancelDeploySettings
+                    ]
+                    [ text "Cancel" ]
+                , button
+                    [ class "basic-button"
+                    , onClick <| SaveDeploySettings shouldUpdate
+                    ]
+                    [ text "Save" ]
+                ]
+
+        ( shouldUpdate, saveSection ) =
+            case model.shouldBoxfileUpdate of
+                Just shouldUpdate ->
+                    shouldUpdate => saveButtons shouldUpdate
+
+                Nothing ->
+                    model.settings.shouldBoxfileUpdate => div [] []
+    in
     div [ class "app-deploy" ]
-        [ Lexi.checkbox ToggleBoxfileUpdate
-            model.shouldBoxfileUpdate
+        [ Lexi.checkbox (ToggleBoxfileUpdate <| not shouldUpdate)
+            shouldUpdate
             [ text "On deploy, if a data component's "
             , strong [] [ text "boxfile.yml" ]
             , text " config settings have changed, rebuild it."
             ]
+        , saveSection
         ]
 
 
@@ -351,4 +393,9 @@ viewIpAddress ( hostName, ipAddress ) =
 
 viewDelete : Model -> App -> Html Msg
 viewDelete model app =
-    div [] []
+    div [ class "app-delete" ]
+        [ div [ class "warning" ]
+            [ strong [] [ text "!" ], text "DANGER ZONE", strong [] [ text "!" ] ]
+        , div [ class "subtext" ] [ text "BEWARE! THIS CANNOT BE UNDONE!" ]
+        , button [ class "basic-button danger-inverse" ] [ text "Delete App" ]
+        ]

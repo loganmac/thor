@@ -21,11 +21,15 @@ select {
     linear-gradient(135deg, $blue-9 50%, transparent 50%);
   background-position:
     calc(100% - 20px) calc(1em + 2px),
-    calc(100% - 13px) calc(1em + 2px),
-    calc(100% - 2.5em) 0.5em;
+    calc(100% - 12px) calc(1em + 2px);
   background-size:
-    7px 7px,
-    7px 7px,
-    1px 1.5em;
+    8px 8px,
+    8px 8px;
   background-repeat: no-repeat;
+}
+
+// remove the firefox select outline
+select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #000;
 }
