@@ -32,6 +32,8 @@
 
 html {
   background-color: $canvas;
+  width: 100vw;
+  overflow-x: hidden;
 }
 
 h2 {
