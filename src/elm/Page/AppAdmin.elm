@@ -77,6 +77,7 @@ update msg ({ corral } as model) =
                 | corral = updatedCorral
                 , ownership = Default
                 , newOwner = Nothing
+                , shouldBoxfileUpdate = Nothing
             }
                 ! []
 
