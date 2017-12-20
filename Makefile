@@ -7,8 +7,8 @@ api:
 	@json-server --watch src/js/db.json --port 4000 || \
 	npm install -g json-server && json-server --watch src/js/db.json --port 4000
 
-build:
-	elm-app build
+deploy:
+	@elm-app build && surge -p ./build -d nanobox-app-admin.surge.sh
 
 clean:
 	@echo "Removing build artifacts..."
