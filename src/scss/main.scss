@@ -19,6 +19,8 @@
 @import "views/top-nav.scss";
 
 * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0px;
   padding: 0px;
   text-decoration: none;
