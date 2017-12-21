@@ -313,5 +313,5 @@ viewDelete model user =
         [ div [ class "warning" ]
             [ strong [] [ text "!" ], text "DANGER ZONE", strong [] [ text "!" ] ]
         , div [ class "subtext" ] [ text "BEWARE! THIS CANNOT BE UNDONE!" ]
-        , button [ class "basic-button danger-inverse" ] [ text "Delete App" ]
+        , button [ class "basic-button danger-inverse" ] [ text "Delete Account" ]
         ]
