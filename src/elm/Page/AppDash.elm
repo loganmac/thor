@@ -57,18 +57,18 @@ update msg model =
             else
                 { model
                     | isAnimating = True
-                    , containers = Container.fadeOut subMsg model.containers
+                    , containers = Container.fadeOut model.containers subMsg
                 }
                     ! [ Port.measureContent subMsg ]
 
         NewContentHeights ({ containerId, parentId } as subMsg) ->
-            { model | containers = Container.newContentHeights subMsg model.containers }
+            { model | containers = Container.newContentHeights model.containers subMsg }
                 ! [ Util.wait 0.7 <| FadeIn subMsg ]
 
         FadeIn ({ containerId, contentId } as subMsg) ->
             { model
                 | isAnimating = False
-                , containers = Container.fadeIn subMsg model.containers
+                , containers = Container.fadeIn model.containers subMsg
             }
                 ! []
 

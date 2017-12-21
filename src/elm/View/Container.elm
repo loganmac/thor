@@ -87,26 +87,30 @@ init id parentId =
 {--|
   UPDATING
   Updating for this component goes like this:
+
   FadeOut => NewContentHeight => FadeIn
+
   The parent component needs to do the following for this to work properly:
 
   FadeOut ->
     set a flag/bool to debounce messages (isAnimating = True) in parent state
     if isAnimating, then don't do anything (debounce)
     call out to port to measure the height of the contentId that was just clicked.
+
   NewContentHeight ->
     this is received from a port, the callback after we told JS to measure content.
-    send the message to set the height, then wait for the animation and then send FadeIn
+    send the message to set the height, then wait for the animation, then send FadeIn
+
   FadeIn containerId ->
-    Set the activeContentId to the one that was fading in, and clear the other two states.
     set isAnimating to false, because we aren't debouncing anymore
+    send the message to fadeIn content
 -}
 
 
 {-| updates the state of a container to fade it out
 -}
-fadeOut : FadeOutMsg -> Containers -> Containers
-fadeOut { containerId, contentId, parentId } containers =
+fadeOut : Containers -> FadeOutMsg -> Containers
+fadeOut containers { containerId, contentId, parentId } =
     let
         currentContainer =
             get containerId parentId containers
@@ -132,8 +136,8 @@ fadeOut { containerId, contentId, parentId } containers =
 {-| updates the state of a container with a new height
 , and reduces the size of the parentContainer with the oldHeight
 -}
-newContentHeights : NewContentHeightsMsg -> Containers -> Containers
-newContentHeights { containerId, parentId, newHeight, oldHeight } containers =
+newContentHeights : Containers -> NewContentHeightsMsg -> Containers
+newContentHeights containers { containerId, parentId, newHeight, oldHeight } =
     let
         currentContainer =
             get containerId parentId containers
@@ -151,8 +155,8 @@ newContentHeights { containerId, parentId, newHeight, oldHeight } containers =
 
 {-| updates the state of a container to fade it in
 -}
-fadeIn : FadeInMsg -> Containers -> Containers
-fadeIn { containerId, parentId } containers =
+fadeIn : Containers -> FadeInMsg -> Containers
+fadeIn containers { containerId, parentId } =
     let
         currentContainer =
             get containerId parentId containers
