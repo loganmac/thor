@@ -52,7 +52,7 @@ init =
 type Msg
     = CorralItemClicked String
     | NewAppName String
-    | ClearNewAppName
+    | CancelNewAppName
     | StartTransferOwnership
     | SetNewOwner String
     | CancelTransferOwnership
@@ -84,7 +84,7 @@ update msg ({ corral } as model) =
         NewAppName name ->
             { model | newAppName = Just name } ! []
 
-        ClearNewAppName ->
+        CancelNewAppName ->
             { model | newAppName = Nothing } ! []
 
         StartTransferOwnership ->
@@ -164,28 +164,14 @@ viewAppInfo model app =
     div [ class "app-info" ]
         [ label [ class "basic-label" ] [ text "Name" ]
         , input [ type_ "text", placeholder "App Name", value appName, onInput NewAppName ] []
-        , viewSaveSection model app
+        , Lexi.saveSection
+            (model.newAppName == Just app.name || model.newAppName == Nothing)
+            CancelNewAppName
+            SaveNewAppName
         , label [ class "basic-label" ] [ text "Provider" ]
         , input [ type_ "text", disabled True, placeholder "Provider", value app.providerName ] []
         , label [ class "basic-label" ] [ text "Region" ]
         , input [ type_ "text", disabled True, placeholder "Region", value app.platformRegion ] []
-        ]
-
-
-viewSaveSection : Model -> App -> Html Msg
-viewSaveSection model app =
-    let
-        appName =
-            Maybe.withDefault "" model.newAppName
-    in
-    div
-        [ classList
-            [ "save-section" => True
-            , "hidden" => app.name == appName || model.newAppName == Nothing
-            ]
-        ]
-        [ button [ class "basic-button cancel", onClick ClearNewAppName ] [ text "Cancel" ]
-        , button [ class "basic-button", onClick SaveNewAppName ] [ text "Save" ]
         ]
 
 
@@ -245,18 +231,7 @@ viewTransferOwnership model app =
                 -- TODO: actually get the options from API here
                 [ option [ disabled True, selected True ] [ text "Select a transfer target" ] ]
                     ++ List.map (viewTransferOptions model) [ "my-team-mate", "my-team" ]
-            , div [ class "save-section" ]
-                [ button
-                    [ class "basic-button cancel"
-                    , onClick CancelTransferOwnership
-                    ]
-                    [ text "Cancel" ]
-                , button
-                    [ class "basic-button"
-                    , onClick SaveNewAppName
-                    ]
-                    [ text "Save" ]
-                ]
+            , Lexi.saveSection False CancelTransferOwnership SaveNewAppName
             ]
         ]
 

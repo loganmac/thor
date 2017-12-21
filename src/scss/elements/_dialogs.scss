@@ -1,0 +1,56 @@
+.dialog {
+  @extend .fixed-position;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.hidden {
+    display: none;
+  }
+  .backdrop {
+    @extend .fixed-position;
+    flex: none;
+    background: $canvas-7;
+    opacity: 0.5;
+  }
+
+  .box {
+    background: $canvas;
+    z-index: 1000;
+    .content {
+      input {
+        width: 100%;
+      }
+      margin: 40px;
+      .message {
+        @extend .font-normal;
+        margin: 20px 0;
+      }
+    }
+  }
+
+  .close-box {
+    margin: 10px;
+    float: right;
+    width: 30px;
+    cursor: pointer;
+
+    svg {
+      display: block;
+    }
+
+    .close-x {
+      stroke: $canvas-6;
+      stroke-linecap: round;
+      stroke-width: 3;
+    }
+  }
+}
+
+.fixed-position {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

@@ -6,6 +6,7 @@
     height: 40px;
     padding: 0px 30px;
     border: none;
+    cursor: pointer;
     &:hover {
       background-color: $blue-5;
     }
@@ -13,7 +14,7 @@
     &.danger {
       background-color: $red;
       &:hover {
-        background-color: $red;
+        background-color: $red-7;
       }
     }
 
@@ -32,6 +33,9 @@
       background-color: transparent;
       border: none;
       outline: none;
+      &:hover {
+        text-decoration: underline;
+      }
     }
     &.disabled {
       background-color: $canvas-9;

@@ -7,10 +7,13 @@
 // ELEMENTS
 @import "elements/buttons.scss";
 @import "elements/checkboxes.scss";
+@import "elements/dialogs.scss";
 @import "elements/inputs.scss";
 @import "elements/labels.scss";
 @import "elements/selects.scss";
+@import "elements/save-section.scss";
 // PAGES
+@import "pages/account-admin";
 @import "pages/app-admin";
 // VIEWS
 @import "views/container.scss";
@@ -21,8 +24,8 @@
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
   text-decoration: none;
   list-style-type: none;
   list-style-position: outside;
@@ -37,7 +40,7 @@ html {
 }
 
 h2 {
-  margin: 30px 0px;
+  margin: 30px 0;
 }
 
 body {
@@ -49,15 +52,11 @@ body {
 .dashboard {
   margin: 8px;
 }
-
-
-
 /********
 **BLOCKS*
 *********
 *These are for displaying items of different heights
 */
-
 .small-block {
   min-height: 100px;
   background-color: $nanobox-green;

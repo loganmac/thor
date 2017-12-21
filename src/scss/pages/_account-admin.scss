@@ -1,0 +1,60 @@
+.account-admin {
+  .account-info {
+    .section {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+
+      > div {
+        width: 48%;
+      }
+
+      input {
+        width: 100%;
+      }
+    }
+    .change-password {
+      @extend .font-normal;
+      font-weight: $bold;
+      color: $blue-9;
+      cursor: pointer;
+      width: 20%;
+    }
+  }
+
+  .account-delete {
+    background: repeating-linear-gradient(45deg, $danger , $danger 5px, $danger-1 6px);
+    color: $white;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 4px;
+
+    .warning {
+      font-size: 24px;
+      font-weight: $bold;
+      margin: 30px 0;
+
+      strong {
+        position: relative;
+        font-size: 36px;
+        margin: 0 20px;
+        bottom: 7px;
+      }
+    }
+
+    .subtext {
+      width: 100%;
+      text-align: center;
+      font-weight: $bold;
+      background-color: $danger-dark;
+      color: $danger;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .basic-button {
+      margin: 50px 0;
+    }
+  }
+}

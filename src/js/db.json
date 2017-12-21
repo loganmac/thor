@@ -29,5 +29,18 @@
     "platform_region": "sfo2",
     "group_id": "644ee1c8-722e-46a7-b29d-cab338c4b58e",
     "group_name": "Group 2"
-  }]
+  }],
+  "users": [{
+      "id": "190e0469-08a5-47b5-a78b-c88221df3067",
+      "username": "loganmac",
+      "email": "logan@nanobox.io",
+      "auth_token": "IAsdfpoija123"
+    },
+    {
+      "id": "ab1bb6ff-b7e9-4fa2-ac77-ae95e00a2363",
+      "username": "jed",
+      "email": "jed@nanobox.io",
+      "auth_token": "ASDoiwoija239"
+    }
+  ]
 }
