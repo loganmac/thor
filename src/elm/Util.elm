@@ -5,11 +5,11 @@ import Task
 import Time
 
 
-{-| helper to do a command after a certain amount of time
+{-| helper to do a command after a certain amount of seconds
 -}
-wait : Time.Time -> msg -> Cmd msg
-wait time msg =
-    Process.sleep time |> Task.perform (\_ -> msg)
+wait : Float -> msg -> Cmd msg
+wait seconds msg =
+    Process.sleep (Time.second * seconds) |> Task.perform (\_ -> msg)
 
 
 {-| helper to sequence another message from inside of an update

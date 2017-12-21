@@ -1,9 +1,9 @@
 module View.Container exposing (..)
 
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html, a, div, li, text, ul)
+import Html exposing (Attribute, Html, a, div, text)
 import Html.Attributes exposing (class, classList, disabled, href, id, style)
-import Maybe.Extra exposing (isJust)
+import Html.Events exposing (onClick)
 import Util exposing ((=>))
 
 
@@ -42,6 +42,9 @@ type alias NewContentHeightsMsg =
 
 type alias FadeInMsg =
     { containerId : Id
+    , contentId : ContentId
+    , newHeight : Height
+    , oldHeight : Height
     , parentId : ParentId
     }
 
@@ -79,21 +82,106 @@ init id parentId =
     }
 
 
-containerView : List (Html msg) -> Container -> Html msg
-containerView contents container =
+
+-- UPDATE
+{--|
+  UPDATING
+  Updating for this component goes like this:
+  FadeOut => NewContentHeight => FadeIn
+  The parent component needs to do the following for this to work properly:
+
+  FadeOut ->
+    set a flag/bool to debounce messages (isAnimating = True) in parent state
+    if isAnimating, then don't do anything (debounce)
+    call out to port to measure the height of the contentId that was just clicked.
+  NewContentHeight ->
+    this is received from a port, the callback after we told JS to measure content.
+    send the message to set the height, then wait for the animation and then send FadeIn
+  FadeIn containerId ->
+    Set the activeContentId to the one that was fading in, and clear the other two states.
+    set isAnimating to false, because we aren't debouncing anymore
+-}
+
+
+{-| updates the state of a container to fade it out
+-}
+fadeOut : FadeOutMsg -> Containers -> Containers
+fadeOut { containerId, contentId, parentId } containers =
+    let
+        currentContainer =
+            get containerId parentId containers
+
+        fadeInId =
+            -- if container is already active, let it fade out
+            if Just contentId == currentContainer.activeContentId then
+                Nothing
+            else
+                Just contentId
+    in
+    -- reset subcontainers and update the animating container
+    set
+        { currentContainer
+            | activeContentId = Nothing
+            , fadeInContentId = fadeInId
+            , fadeOutContentId = currentContainer.activeContentId
+        }
+    <|
+        resetSubcontainers containerId containers
+
+
+{-| updates the state of a container with a new height
+, and reduces the size of the parentContainer with the oldHeight
+-}
+newContentHeights : NewContentHeightsMsg -> Containers -> Containers
+newContentHeights { containerId, parentId, newHeight, oldHeight } containers =
+    let
+        currentContainer =
+            get containerId parentId containers
+
+        parentContainer =
+            get parentId "" containers
+
+        parentHeight =
+            newHeight + parentContainer.height - oldHeight
+    in
+    containers
+        |> set { currentContainer | height = newHeight }
+        |> set { parentContainer | height = parentHeight }
+
+
+{-| updates the state of a container to fade it in
+-}
+fadeIn : FadeInMsg -> Containers -> Containers
+fadeIn { containerId, parentId } containers =
+    let
+        currentContainer =
+            get containerId parentId containers
+    in
+    set
+        { currentContainer
+            | activeContentId = currentContainer.fadeInContentId
+            , fadeInContentId = Nothing
+            , fadeOutContentId = Nothing
+        }
+        containers
+
+
+
+-- VIEW
+
+
+view : List (Html msg) -> Container -> Html msg
+view contents container =
     div
         [ id container.id
-        , classList
-            [ ( "container", True )
-            , ( "active", isJust container.activeContentId || isJust container.fadeInContentId )
-            ]
+        , class "container"
         , style [ ( "height", toString container.height ++ "px" ) ]
         ]
-        (List.indexedMap (contentView container) contents)
+        (List.indexedMap (viewContent container) contents)
 
 
-contentView : Container -> Int -> Html msg -> Html msg
-contentView container index content =
+viewContent : Container -> Int -> Html msg -> Html msg
+viewContent container index content =
     let
         contentId =
             toString (index + 1)
@@ -113,15 +201,39 @@ contentView container index content =
         [ content ]
 
 
-{-| Utility to toggle if the content is already
-the active content of the container
--}
-toggleActive : ContentId -> ContentId -> ContentId
-toggleActive contentId activeContentId =
-    if contentId == activeContentId then
-        ""
-    else
-        contentId
+viewLinks : (FadeOutMsg -> msg) -> Container -> ParentId -> List a -> Html msg
+viewLinks msg container parentId contents =
+    div [ class "container-links" ] <|
+        List.indexedMap (viewLink msg container parentId) contents
+
+
+viewLink : (FadeOutMsg -> msg) -> Container -> ContentId -> Int -> a -> Html msg
+viewLink msg container parentId contentIdNum _ =
+    let
+        currentContentId =
+            toString <| contentIdNum + 1
+
+        oldContentId =
+            Maybe.withDefault "" container.activeContentId
+
+        contentId =
+            -- if the contentId is already active, use empty string.
+            -- this gives us the collapse behavior
+            if container.activeContentId == Just currentContentId then
+                ""
+            else
+                currentContentId
+
+        action =
+            onClick <|
+                msg <|
+                    FadeOutMsg container.id contentId oldContentId parentId
+    in
+    div [ class "container-link", action ] [ text currentContentId ]
+
+
+
+-- UTILITIES
 
 
 {-| Utility for updating a container in a group (dictionary)
@@ -145,110 +257,15 @@ get id parentId model =
             container
 
 
-{-| Utility for getting any subcontainers
--}
-getSubcontainers : Id -> Containers -> Containers
-getSubcontainers id containers =
-    Dict.filter (\k v -> v.parentId == id) containers
-
-
 {-| utility to update subcontainers
 -}
 resetSubcontainers : Id -> Containers -> Containers
 resetSubcontainers id containers =
-    Dict.map
-        (\k v ->
-            if v.parentId == id then
-                init v.id id
+    let
+        reset _ container =
+            if container.parentId == id then
+                init container.id id
             else
-                v
-        )
-        containers
-
-
-
-{--|
-  UPDATING
-  Updating for this component goes like this:
-
-  FadeOut => NewContentHeight => FadeIn
-  FadeOut ->
-    set the activeContentId to nothing
-    set the clicked contentId to fadingIn
-    set the activeContentId to fading out
-    set isAnimating to true (to debounce)
-    clear out the state of any subcontainers
-    call out to port to measure the height of the contentId that was just clicked.
-  NewContentHeight ->
-    this is received from a port, the callback after we told JS to measure content.
-    set the height, then wait for the animation and then send FadeIn
-  FadeIn containerId ->
-    Set the activeContentId to the one that was fading in, and clear the other two states.
-    set isAnimating to false, because we aren't debouncing anymore
-
--}
-
-
-{-| updates the state of a container to fade it out
--}
-fadeOut : FadeOutMsg -> Containers -> Containers
-fadeOut { containerId, contentId, parentId } containers =
-    let
-        oldContainer =
-            get containerId parentId containers
-
-        updateContainer =
-            if Just contentId == oldContainer.activeContentId then
-                set
-                    { oldContainer
-                        | activeContentId = Nothing
-                        , fadeInContentId = Nothing
-                        , fadeOutContentId = oldContainer.activeContentId
-                    }
-            else
-                set
-                    { oldContainer
-                        | activeContentId = Nothing
-                        , fadeInContentId = Just contentId
-                        , fadeOutContentId = oldContainer.activeContentId
-                    }
+                container
     in
-    resetSubcontainers containerId containers
-        |> updateContainer
-
-
-{-| updates the state of a container with a new height
-, and reduces the size of the parentContainer with the oldHeight
--}
-newContentHeights : NewContentHeightsMsg -> Containers -> Containers
-newContentHeights { containerId, parentId, newHeight, oldHeight } containers =
-    let
-        oldContainer =
-            get containerId parentId containers
-
-        parentContainer =
-            get parentId "" containers
-
-        parentHeight =
-            newHeight + parentContainer.height - oldHeight
-    in
-    containers
-        |> set { oldContainer | height = newHeight }
-        |> set { parentContainer | height = parentHeight }
-
-
-{-| updates the state of a container to fade it in
--}
-fadeIn : FadeInMsg -> Containers -> Containers
-fadeIn { containerId, parentId } containers =
-    let
-        oldContainer =
-            get containerId parentId containers
-    in
-    set
-        { oldContainer
-            | activeContentId = oldContainer.fadeInContentId
-            , fadeInContentId = Nothing
-            , fadeOutContentId = Nothing
-        }
-        containers
+    Dict.map reset containers

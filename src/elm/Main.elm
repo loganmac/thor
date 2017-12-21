@@ -115,9 +115,9 @@ view : Model -> Html Msg
 view model =
     div [ class "dashboard" ]
         [ TopNav.view model.topNav AccountMenu.view
-        , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin model.app
 
-        -- , Html.map AppDashMsg <| AppDash.view model.appDash
+        -- , Html.map AppAdminMsg <| AppAdmin.view model.appAdmin model.app
+        , Html.map AppDashMsg <| AppDash.view model.appDash
         ]
 
 
