@@ -99,7 +99,8 @@ init id parentId =
 
   NewContentHeight ->
     this is received from a port, the callback after we told JS to measure content.
-    send the message to set the height, then wait for the animation, then send FadeIn
+    send the message to set the height
+    wait for the animation, then send FadeIn
 
   FadeIn containerId ->
     set isAnimating to false, because we aren't debouncing anymore
