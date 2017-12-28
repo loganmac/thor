@@ -1,5 +1,9 @@
 module Util exposing (..)
 
+{-| basic utility functions
+@docs wait, send, (=>)
+-}
+
 import Process
 import Task
 import Time
