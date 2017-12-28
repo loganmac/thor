@@ -10,7 +10,7 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 
 
 type alias App =
-    { id : String
+    { id : Id
     , name : String
     , timezone : String
     , state : String
@@ -27,29 +27,14 @@ type alias App =
     }
 
 
-initialModel : App
-initialModel =
-    { id = ""
-    , name = ""
-    , timezone = ""
-    , state = ""
-    , autoReconfigure = False
-    , config = Just ""
-    , providerId = ""
-    , providerName = ""
-    , providerIcon = ""
-    , providerEndpoint = Just ""
-    , platformId = ""
-    , platformRegion = ""
-    , groupId = ""
-    , groupName = ""
-    }
+type Id
+    = Id String
 
 
 decoder : Decoder App
 decoder =
     decode App
-        |> required "id" Decode.string
+        |> required "id" (Decode.map Id Decode.string)
         |> required "name" Decode.string
         |> required "timezone" Decode.string
         |> required "state" Decode.string

@@ -10,8 +10,7 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 
 
 type alias AppDash =
-    { id : String
-    , name : String
+    { name : String
     , hosts : List Host
     , clusters : List Cluster
     }
@@ -44,8 +43,7 @@ type alias Cluster =
 
 initialModel : AppDash
 initialModel =
-    { id = "odin-staging-1"
-    , name = "odin-staging"
+    { name = "odin-staging"
     , hosts =
         [ { id = "host-do-1"
           , name = "do.1"

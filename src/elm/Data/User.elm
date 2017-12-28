@@ -10,16 +10,20 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 
 
 type alias User =
-    { id : String
+    { id : Id
     , username : String
     , email : String
     , authToken : String
     }
 
 
+type Id
+    = Id String
+
+
 initialModel : User
 initialModel =
-    { id = ""
+    { id = Id ""
     , username = ""
     , email = ""
     , authToken = ""
@@ -29,7 +33,7 @@ initialModel =
 decoder : Decoder User
 decoder =
     decode User
-        |> required "id" Decode.string
+        |> required "id" (Decode.map Id Decode.string)
         |> required "username" Decode.string
         |> required "email" Decode.string
         |> required "auth_token" Decode.string
