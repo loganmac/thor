@@ -53,6 +53,7 @@ routes : Url.Parser (Route -> a) a
 routes =
     Url.oneOf
         [ Url.map LoginRoute (Url.s "login" </> Url.string)
+        , Url.map NotFoundRoute (Url.s "not-found")
         , Url.map DashboardRoute Dashboard.routeParser
         ]
 

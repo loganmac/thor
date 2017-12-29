@@ -77,7 +77,7 @@ type Route
     | AppRoute App.Id App.Route
     | NewAppRoute
     | AccountAdminRoute
-    | TeamAdminRoute
+    | TeamAdminRoute String
     | DownloadRoute
 
 
@@ -85,7 +85,12 @@ routeParser : Url.Parser (Route -> a) a
 routeParser =
     Url.oneOf
         [ Url.map HomeRoute Url.top
+        , Url.map HomeRoute (Url.s "apps")
+        , Url.map NewAppRoute (Url.s "apps" </> Url.s "new")
         , Url.map AppRoute App.routeParser
+        , Url.map AccountAdminRoute (Url.s "account-admin")
+        , Url.map TeamAdminRoute (Url.s "teams" </> Url.string </> Url.s "admin")
+        , Url.map DownloadRoute (Url.s "download")
         ]
 
 
@@ -123,7 +128,7 @@ navigateTo route model =
             in
             { model | page = AccountAdmin initAccountAdmin } ! [ Cmd.map AccountAdminMsg cmd ]
 
-        ( TeamAdminRoute, _ ) ->
+        ( TeamAdminRoute teamId, _ ) ->
             { model | page = TeamAdmin } ! []
 
         ( DownloadRoute, _ ) ->
@@ -188,16 +193,16 @@ view model logoPaths =
                     Html.map AppMsg <| App.view subModel
 
                 NewApp ->
-                    Html.div [] []
+                    Html.div [] [ Html.text "New app not implemented" ]
 
                 AccountAdmin subModel ->
                     Html.map AccountAdminMsg <| AccountAdmin.view subModel model.user
 
                 TeamAdmin ->
-                    Html.div [] []
+                    Html.div [] [ Html.text "Team admin not implemented" ]
 
                 Download ->
-                    Html.div [] []
+                    Html.div [] [ Html.text "Download not implemented" ]
     in
     div [ class "dashboard" ]
         [ TopNav.view logoPaths AccountMenu.view

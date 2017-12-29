@@ -3,6 +3,7 @@ module Page.Dashboard.App exposing (..)
 import Data.App as App exposing (App)
 import Html exposing (Html)
 import Http
+import Navigation
 import Page.Dashboard.App.Admin as Admin
 import Page.Dashboard.App.Dash as Dash
 import UrlParser as Url exposing ((</>))
@@ -12,7 +13,9 @@ import UrlParser as Url exposing ((</>))
 
 
 type alias Model =
-    { page : Page, app : App }
+    { page : Page
+    , app : Maybe App
+    }
 
 
 type Page
@@ -31,7 +34,7 @@ init (App.Id id) =
             Dash.init
     in
     { page = Dash initDash
-    , app = App.initialModel
+    , app = Nothing
     }
         ! [ dashCmd, App.getApp id GetAppResponse ]
 
@@ -79,7 +82,7 @@ type Route
 
 routeParser : Url.Parser (App.Id -> Route -> a) a
 routeParser =
-    Url.s "app"
+    Url.s "apps"
         </> App.idParser
         </> Url.oneOf
                 [ Url.map DashRoute Url.top
@@ -153,11 +156,12 @@ update msg model =
             { model | page = Dash updated } ! [ Cmd.map DashMsg cmd ]
 
         ( GetAppResponse (Ok app), _ ) ->
-            { model | app = app } ! []
+            { model | app = Just app } ! []
 
         ( GetAppResponse (Err error), _ ) ->
-            -- TODO: Don't swallow error
-            model ! []
+            -- TODO: Don't swallow error, show error or go
+            -- to not found on an invalid url
+            model ! [ Navigation.newUrl "#not-found" ]
 
         ( _, _ ) ->
             -- Disregard incoming messages that arrived for the wrong page
@@ -170,21 +174,26 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model.page of
-        Admin subModel ->
-            Html.map AdminMsg <| Admin.view subModel model.app
+    case model.app of
+        Just app ->
+            case model.page of
+                Admin subModel ->
+                    Html.map AdminMsg <| Admin.view subModel app
 
-        Dash subModel ->
-            Html.map DashMsg <| Dash.view subModel
+                Dash subModel ->
+                    Html.map DashMsg <| Dash.view subModel
 
-        Logs ->
-            Html.div [] []
+                Logs ->
+                    Html.div [] [ Html.text "Logs not implemented." ]
 
-        History ->
-            Html.div [] []
+                History ->
+                    Html.div [] [ Html.text "History not implemented." ]
 
-        Network ->
-            Html.div [] []
+                Network ->
+                    Html.div [] [ Html.text "Network not implemented." ]
 
-        Config ->
-            Html.div [] []
+                Config ->
+                    Html.div [] [ Html.text "Config not implemented." ]
+
+        Nothing ->
+            Html.div [] [ Html.text "Loading..." ]
