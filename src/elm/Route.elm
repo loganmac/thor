@@ -7,7 +7,7 @@ import UrlParser as Url exposing ((</>))
 
 type Route
     = NotFoundRoute
-    | LoginRoute
+    | LoginRoute String
     | RegisterRoute
     | ForgotPasswordRoute
     | DashboardRoute
@@ -17,7 +17,7 @@ type Route
     | DownloadRoute
     | AppAdminRoute
     | AppConfigRoute
-    | AppDashRoute
+    | AppDashRoute App.Id
     | AppHistoryRoute
     | AppLogsRoute
     | AppNetworkRoute
