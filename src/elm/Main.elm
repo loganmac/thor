@@ -5,7 +5,7 @@ import Navigation exposing (Location)
 import Page.Dashboard as Dashboard
 import Page.Login as Login
 import Page.NotFound
-import UrlParser as Url exposing ((</>))
+import Route exposing (Route)
 
 
 ---- MODEL ----
@@ -43,39 +43,11 @@ init flags location =
 ---- ROUTING ----
 
 
-type Route
-    = DashboardRoute Dashboard.Route
-    | LoginRoute String
-    | NotFoundRoute
-
-
-routes : Url.Parser (Route -> a) a
-routes =
-    Url.oneOf
-        [ Url.map LoginRoute (Url.s "login" </> Url.string)
-        , Url.map NotFoundRoute (Url.s "not-found")
-        , Url.map DashboardRoute Dashboard.routeParser
-        ]
-
-
-parseRoute : Location -> Route
-parseRoute location =
-    if String.isEmpty location.hash then
-        DashboardRoute Dashboard.HomeRoute
-    else
-        case Url.parseHash routes location of
-            Just route ->
-                route
-
-            Nothing ->
-                NotFoundRoute
-
-
 navigateTo : Route -> Model -> ( Model, Cmd Msg )
 navigateTo route model =
     case ( route, model.page ) of
         -- if we are already on the dashboard, then this is a subroute
-        ( DashboardRoute subRoute, Dashboard subModel ) ->
+        ( DashboardRoute, Dashboard subModel ) ->
             let
                 ( dashboard, dashCmd ) =
                     Dashboard.update (Dashboard.RouteChange subRoute) subModel
@@ -116,7 +88,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
         ( RouteChange route, _ ) ->
-            navigateTo route model
+            { model | page = Route.navigateTo route } ! []
 
         ( LoginMsg subMsg, Login subModel ) ->
             model ! []
@@ -173,7 +145,7 @@ view model =
 
 main : Program Flags Model Msg
 main =
-    Navigation.programWithFlags (parseRoute >> RouteChange)
+    Navigation.programWithFlags (Route.parseRoute >> RouteChange)
         { view = view
         , init = init
         , update = update

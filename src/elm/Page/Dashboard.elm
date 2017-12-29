@@ -70,77 +70,51 @@ pageSubscriptions page =
 
 
 -- ROUTING
-
-
-type Route
-    = HomeRoute
-    | AppRoute App.Id App.Route
-    | NewAppRoute
-    | AccountAdminRoute
-    | TeamAdminRoute String
-    | DownloadRoute
-
-
-routeParser : Url.Parser (Route -> a) a
-routeParser =
-    Url.oneOf
-        [ Url.map HomeRoute Url.top
-        , Url.map HomeRoute (Url.s "apps")
-        , Url.map NewAppRoute (Url.s "apps" </> Url.s "new")
-        , Url.map AppRoute App.routeParser
-        , Url.map AccountAdminRoute (Url.s "account-admin")
-        , Url.map TeamAdminRoute (Url.s "teams" </> Url.string </> Url.s "admin")
-        , Url.map DownloadRoute (Url.s "download")
-        ]
-
-
-navigateTo : Route -> Model -> ( Model, Cmd Msg )
-navigateTo route model =
-    case ( route, model.page ) of
-        -- If we are already on the app page, then this is a subroute
-        ( AppRoute appId subRoute, App subModel ) ->
-            let
-                ( app, appCmd ) =
-                    App.update (App.RouteChange subRoute) subModel
-            in
-            { model | page = App app } ! [ Cmd.map AppMsg appCmd ]
-
-        ( AppRoute appId subRoute, _ ) ->
-            let
-                ( initApp, initCmd ) =
-                    App.init appId
-
-                ( app, dashCmd ) =
-                    App.update (App.RouteChange subRoute) initApp
-            in
-            { model | page = App app } ! [ Cmd.map AppMsg initCmd, Cmd.map AppMsg dashCmd ]
-
-        ( HomeRoute, _ ) ->
-            { model | page = Home } ! []
-
-        ( NewAppRoute, _ ) ->
-            { model | page = NewApp } ! []
-
-        ( AccountAdminRoute, _ ) ->
-            let
-                ( initAccountAdmin, cmd ) =
-                    AccountAdmin.init
-            in
-            { model | page = AccountAdmin initAccountAdmin } ! [ Cmd.map AccountAdminMsg cmd ]
-
-        ( TeamAdminRoute teamId, _ ) ->
-            { model | page = TeamAdmin } ! []
-
-        ( DownloadRoute, _ ) ->
-            { model | page = Download } ! []
-
-
-
+-- navigateTo : Route -> Model -> ( Model, Cmd Msg )
+-- navigateTo route model =
+--     case ( route, model.page ) of
+--         -- If we are already on the app page, then this is a subroute
+--         ( AppRoute appId subRoute, App subModel ) ->
+--             let
+--                 ( app, appCmd ) =
+--                     App.update (App.RouteChange subRoute) subModel
+--             in
+--             { model | page = App app } ! [ Cmd.map AppMsg appCmd ]
+--
+--         ( AppRoute appId subRoute, _ ) ->
+--             let
+--                 ( initApp, initCmd ) =
+--                     App.init appId
+--
+--                 ( app, dashCmd ) =
+--                     App.update (App.RouteChange subRoute) initApp
+--             in
+--             { model | page = App app } ! [ Cmd.map AppMsg initCmd, Cmd.map AppMsg dashCmd ]
+--
+--         ( HomeRoute, _ ) ->
+--             { model | page = Home } ! []
+--
+--         ( NewAppRoute, _ ) ->
+--             { model | page = NewApp } ! []
+--
+--         ( AccountAdminRoute, _ ) ->
+--             let
+--                 ( initAccountAdmin, cmd ) =
+--                     AccountAdmin.init
+--             in
+--             { model | page = AccountAdmin initAccountAdmin } ! [ Cmd.map AccountAdminMsg cmd ]
+--
+--         ( TeamAdminRoute teamId, _ ) ->
+--             { model | page = TeamAdmin } ! []
+--
+--         ( DownloadRoute, _ ) ->
+--             { model | page = Download } ! []
+--
 -- UPDATE
 
 
 type Msg
-    = RouteChange Route
+    = RouteChange Page
     | AppMsg App.Msg
     | AccountAdminMsg AccountAdmin.Msg
     | GetUserResponse (Result Http.Error User)
@@ -149,8 +123,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
-        ( RouteChange subRoute, _ ) ->
-            navigateTo subRoute model
+        ( RouteChange page, _ ) ->
+            -- navigateTo subRoute model
+            model ! []
 
         ( AppMsg subMsg, App subModel ) ->
             let

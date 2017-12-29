@@ -80,20 +80,6 @@ type Route
     | NetworkRoute
 
 
-routeParser : Url.Parser (App.Id -> Route -> a) a
-routeParser =
-    Url.s "apps"
-        </> App.idParser
-        </> Url.oneOf
-                [ Url.map DashRoute Url.top
-                , Url.map AdminRoute (Url.s "admin")
-                , Url.map ConfigRoute (Url.s "config")
-                , Url.map HistoryRoute (Url.s "history")
-                , Url.map LogsRoute (Url.s "logs")
-                , Url.map NetworkRoute (Url.s "network")
-                ]
-
-
 navigateTo : Route -> Model -> ( Model, Cmd Msg )
 navigateTo route model =
     case route of
