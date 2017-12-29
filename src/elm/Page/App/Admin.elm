@@ -1,4 +1,4 @@
-module Page.AppAdmin exposing (..)
+module Page.App.Admin exposing (..)
 
 -- import Http
 

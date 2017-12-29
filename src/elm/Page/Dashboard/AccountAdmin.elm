@@ -1,4 +1,4 @@
-module Page.AccountAdmin exposing (..)
+module Page.Dashboard.AccountAdmin exposing (..)
 
 -- import Http
 -- import View.Lexi as Lexi

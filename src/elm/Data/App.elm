@@ -4,6 +4,7 @@ import Data.Helpers exposing (apiUrl)
 import Http
 import Json.Decode as Decode exposing (Decoder, nullable)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required)
+import UrlParser
 
 
 -- MODEL
@@ -29,6 +30,11 @@ type alias App =
 
 type Id
     = Id String
+
+
+idParser : UrlParser.Parser (Id -> a) a
+idParser =
+    UrlParser.custom "ID" <| Ok << Id
 
 
 decoder : Decoder App

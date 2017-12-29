@@ -1,4 +1,4 @@
-module Page.AppDash exposing (..)
+module Page.App.Dash exposing (..)
 
 import Data.AppDash as AppDash exposing (AppDash)
 import Dict exposing (Dict)
