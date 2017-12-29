@@ -28,6 +28,25 @@ type alias App =
     }
 
 
+initialModel : App
+initialModel =
+    { id = Id ""
+    , name = ""
+    , timezone = ""
+    , state = ""
+    , autoReconfigure = False
+    , config = Just ""
+    , providerId = ""
+    , providerName = ""
+    , providerIcon = ""
+    , providerEndpoint = Just ""
+    , platformId = ""
+    , platformRegion = ""
+    , groupId = ""
+    , groupName = ""
+    }
+
+
 type Id
     = Id String
 

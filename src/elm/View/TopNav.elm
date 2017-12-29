@@ -7,10 +7,11 @@ import Html.Attributes exposing (alt, class, src)
 -- MODEL
 
 
-type alias Model =
-    { logoPath : String
-    , homeLogoPath : String
-    , supportLogoPath : String
+type alias LogoPaths r =
+    { r
+        | logoPath : String
+        , homeLogoPath : String
+        , supportLogoPath : String
     }
 
 
@@ -18,7 +19,7 @@ type alias Model =
 -- VIEW
 
 
-view : Model -> Html msg -> Html msg
+view : LogoPaths r -> Html msg -> Html msg
 view model inner =
     div [ class "top-nav" ]
         [ div [ class "logo" ]

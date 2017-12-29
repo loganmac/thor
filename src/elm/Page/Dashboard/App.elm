@@ -1,17 +1,18 @@
-module Page.App exposing (..)
+module Page.Dashboard.App exposing (..)
 
 import Data.App as App exposing (App)
 import Html exposing (Html)
 import Http
-import Page.App.Admin as Admin
-import Page.App.Dash as Dash
+import Page.Dashboard.App.Admin as Admin
+import Page.Dashboard.App.Dash as Dash
+import UrlParser as Url exposing ((</>))
 
 
 -- MODEL
 
 
 type alias Model =
-    { app : App, page : Page }
+    { page : Page, app : App }
 
 
 type Page
@@ -23,8 +24,20 @@ type Page
     | Network
 
 
+init : App.Id -> ( Model, Cmd Msg )
+init (App.Id id) =
+    let
+        ( initDash, dashCmd ) =
+            Dash.init
+    in
+    { page = Dash initDash
+    , app = App.initialModel
+    }
+        ! [ dashCmd, App.getApp id GetAppResponse ]
 
--- App.getApp "c3bff5fd-ce3e-4bfb-8ecc-f43714a3fc44" GetAppResponse
+
+
+--
 -- SUBSCRIPTIONS
 
 
@@ -52,11 +65,69 @@ pageSubscriptions page =
 
 
 
+-- ROUTING
+
+
+type Route
+    = AdminRoute
+    | ConfigRoute
+    | DashRoute
+    | HistoryRoute
+    | LogsRoute
+    | NetworkRoute
+
+
+routeParser : Url.Parser (App.Id -> Route -> a) a
+routeParser =
+    Url.s "app"
+        </> App.idParser
+        </> Url.oneOf
+                [ Url.map DashRoute Url.top
+                , Url.map AdminRoute (Url.s "admin")
+                , Url.map ConfigRoute (Url.s "config")
+                , Url.map HistoryRoute (Url.s "history")
+                , Url.map LogsRoute (Url.s "logs")
+                , Url.map NetworkRoute (Url.s "network")
+                ]
+
+
+navigateTo : Route -> Model -> ( Model, Cmd Msg )
+navigateTo route model =
+    case route of
+        AdminRoute ->
+            let
+                ( admin, cmd ) =
+                    Admin.init
+            in
+            { model | page = Admin admin } ! [ Cmd.map AdminMsg cmd ]
+
+        ConfigRoute ->
+            { model | page = Config } ! []
+
+        DashRoute ->
+            let
+                ( dash, cmd ) =
+                    Dash.init
+            in
+            { model | page = Dash dash } ! [ Cmd.map DashMsg cmd ]
+
+        HistoryRoute ->
+            { model | page = History } ! []
+
+        LogsRoute ->
+            { model | page = Logs } ! []
+
+        NetworkRoute ->
+            { model | page = Network } ! []
+
+
+
 -- UPDATE
 
 
 type Msg
-    = AdminMsg Admin.Msg
+    = RouteChange Route
+    | AdminMsg Admin.Msg
     | DashMsg Dash.Msg
     | GetAppResponse (Result Http.Error App)
 
@@ -64,6 +135,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
+        ( RouteChange route, _ ) ->
+            navigateTo route model
+
         ( AdminMsg subMsg, Admin subModel ) ->
             let
                 ( updated, cmd ) =
