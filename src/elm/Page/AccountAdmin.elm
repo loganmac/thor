@@ -1,7 +1,6 @@
 module Page.AccountAdmin exposing (..)
 
--- import Http
--- import View.Lexi as Lexi
+-- TODO: Refactor out into sub-pages
 
 import Data.User as User exposing (User)
 import Html exposing (Attribute, Html, a, button, div, hr, input, label, option, select, strong, text)
