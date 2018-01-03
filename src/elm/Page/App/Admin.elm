@@ -1,6 +1,6 @@
 module Page.App.Admin exposing (..)
 
--- import Http
+-- TODO: Refactor out into sub-pages
 
 import Data.App as App exposing (App)
 import Html exposing (Attribute, Html, a, button, div, hr, input, label, option, select, strong, text)

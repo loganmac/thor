@@ -1,4 +1,4 @@
-module Page.Dashboard exposing (..)
+module Page.User.Plan exposing (..)
 
 -- TODO: not implemented.
 
@@ -51,4 +51,4 @@ update msg model =
 
 view : Flag.Flags -> Model -> Html Msg
 view flags model =
-    Page.view flags <| div [ class "dashboard" ] []
+    Page.view flags <| div [ class "user-plan" ] []

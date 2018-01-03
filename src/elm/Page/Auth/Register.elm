@@ -1,5 +1,7 @@
 module Page.Auth.Register exposing (..)
 
+-- TODO: not implemented.
+
 import Html exposing (Html, div, text)
 
 

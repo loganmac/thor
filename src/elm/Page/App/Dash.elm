@@ -2,6 +2,7 @@ module Page.App.Dash exposing (..)
 
 import Data.AppDash as AppDash exposing (AppDash)
 import Dict exposing (Dict)
+import Flag
 import Html exposing (Attribute, Html, div, h1, text)
 import Html.Attributes exposing (class, id)
 import Port
@@ -77,8 +78,8 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
+view : Flag.Flags -> Model -> Html Msg
+view flags model =
     div [ class "app-dash" ]
         [ -- view app details
           div [ class "app-dash hosts" ] <|

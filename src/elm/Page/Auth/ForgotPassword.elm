@@ -1,5 +1,7 @@
 module Page.Auth.ForgotPassword exposing (..)
 
+-- TODO: not implemented.
+
 import Html exposing (Html, div, text)
 
 

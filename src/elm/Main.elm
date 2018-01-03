@@ -2,19 +2,46 @@ module Main exposing (..)
 
 import Data.App as App exposing (App)
 import Data.User as User exposing (User)
+import Flag
 import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (class)
 import Http
 import Navigation exposing (Location)
-import Page.AccountAdmin as AccountAdmin
+import Page.App.Boxfile as AppBoxfile
+import Page.App.Certificates as AppCertificates
+import Page.App.Dash as AppDash
+import Page.App.Delete as AppDelete
+import Page.App.Deploy as AppDeploy
+import Page.App.Dns as AppDns
+import Page.App.Evars as AppEvars
+import Page.App.History as AppHistory
+import Page.App.Info as AppInfo
+import Page.App.Logs as AppLogs
+import Page.App.Ownership as AppOwnership
+import Page.App.Security as AppSecurity
+import Page.App.Update as AppUpdate
 import Page.Auth.ForgotPassword as ForgotPassword
 import Page.Auth.Login as Login
 import Page.Auth.Register as Register
 import Page.Dashboard as Dashboard
-import Page.NotFound
+import Page.Download as Download
+import Page.NewApp as NewApp
+import Page.Team.AppGroups as TeamAppGroups
+import Page.Team.Billing as TeamBilling
+import Page.Team.Delete as TeamDelete
+import Page.Team.Hosting as TeamHosting
+import Page.Team.Info as TeamInfo
+import Page.Team.Members as TeamMembers
+import Page.Team.Plan as TeamPlan
+import Page.Team.Support as TeamSupport
+import Page.User.Billing as UserBilling
+import Page.User.Delete as UserDelete
+import Page.User.Hosting as UserHosting
+import Page.User.Info as UserInfo
+import Page.User.Plan as UserPlan
+import Page.User.Support as UserSupport
+import Page.User.Teams as UserTeams
 import Route exposing (Route)
-import View.AccountMenu as AccountMenu
-import View.TopNav as TopNav
+import View.NotFound as NotFound
 
 
 ---- MODEL ----
@@ -22,23 +49,15 @@ import View.TopNav as TopNav
 
 type alias Model =
     { page : Page
-    , flags : Flags
+    , flags : Flag.Flags
     , user : Maybe User
     , app : Maybe App
-    }
-
-
-type alias Flags =
-    { logoPath : String
-    , homeLogoPath : String
-    , supportLogoPath : String
     }
 
 
 type Page
     = -- Top level
       NotFound
-    | Loading
     | Login Login.Model
     | Register Register.Model
     | ForgotPassword ForgotPassword.Model
@@ -79,10 +98,14 @@ type Page
     | UserDelete UserDelete.Model
 
 
-init : Flags -> Location -> ( Model, Cmd Msg )
+init : Flag.Flags -> Location -> ( Model, Cmd Msg )
 init flags location =
+    let
+        ( dashboard, cmd ) =
+            Dashboard.init
+    in
     navigateTo (Route.parseRoute location)
-        { page = Loading
+        { page = Dashboard dashboard
         , flags = flags
         , user = Nothing
         , app = Nothing
@@ -96,6 +119,7 @@ init flags location =
 navigateTo : Route -> Model -> ( Model, Cmd Msg )
 navigateTo route model =
     case route of
+        -- TOP LEVEL
         Route.NotFound ->
             { model | page = NotFound } ! []
 
@@ -118,71 +142,102 @@ navigateTo route model =
                   , Cmd.map DashboardMsg cmd
                   ]
 
+        Route.Download ->
+            { model | page = Download {} } ! []
+
         Route.NewApp ->
             { model | page = NewApp {} } ! []
 
-        Route.TeamAdmin teamId ->
-            { model | page = TeamAdmin {} } ! []
-
-        Route.UserInfo ->
-            { model | page = Register {} } ! []
-
-        Route.UserSupport ->
-            { model | page = Register {} } ! []
-
-        Route.UserBilling ->
-            { model | page = Register {} } ! []
-
-        Route.UserAccountPlan ->
-            { model | page = Register {} } ! []
-
-        Route.UserHostingAccounts ->
-            { model | page = Register {} } ! []
-
-        Route.UserTeams ->
-            { model | page = Register {} } ! []
-
-        Route.UserDelete ->
-            { model | page = Register {} } ! []
-
-        Route.Download ->
-            { model | page = Register {} } ! []
-
+        -- APP MANAGEMENT
         Route.AppDash appId ->
-            { model | page = Register {} } ! []
-
-        Route.AppHistory appId ->
-            { model | page = Register {} } ! []
-
-        Route.AppLogs appId ->
-            { model | page = Register {} } ! []
-
-        Route.AppCertificates appId ->
-            { model | page = Register {} } ! []
-
-        Route.AppDns appId ->
-            { model | page = Register {} } ! []
-
-        Route.AppEvars idApp ->
-            { model | page = Register {} } ! []
-
-        Route.AppBoxfile idApp ->
-            { model | page = Register {} } ! []
-
-        Route.AppDash idApp ->
-            { model | page = Register {} } ! []
-
-        Route.AppDns idApp ->
-            { model | page = Register {} } ! []
-
-        Route.AppCertificates idApp ->
-            { model | page = Register {} } ! []
-
-        Route.AppHistory idApp ->
-            { model | page = Register {} } ! []
+            let
+                ( appDash, cmd ) =
+                    AppDash.init
+            in
+            { model | page = AppDash appDash } ! [ Cmd.map AppDashMsg cmd ]
 
         Route.AppLogs idApp ->
-            { model | page = Register {} } ! []
+            { model | page = AppLogs {} } ! []
+
+        Route.AppHistory idApp ->
+            { model | page = AppHistory {} } ! []
+
+        Route.AppDns appId ->
+            { model | page = AppDns {} } ! []
+
+        Route.AppCertificates appId ->
+            { model | page = AppCertificates {} } ! []
+
+        Route.AppEvars appId ->
+            { model | page = AppEvars {} } ! []
+
+        Route.AppBoxfile appId ->
+            { model | page = AppBoxfile {} } ! []
+
+        Route.AppInfo appId ->
+            { model | page = AppInfo {} } ! []
+
+        Route.AppOwnership appId ->
+            { model | page = AppOwnership {} } ! []
+
+        Route.AppDeploy appId ->
+            { model | page = AppDeploy {} } ! []
+
+        Route.AppUpdate appId ->
+            { model | page = AppUpdate {} } ! []
+
+        Route.AppSecurity appId ->
+            { model | page = AppSecurity {} } ! []
+
+        Route.AppDelete appId ->
+            { model | page = AppDelete {} } ! []
+
+        -- TEAM MANAGEMENT
+        Route.TeamInfo teamId ->
+            { model | page = TeamInfo {} } ! []
+
+        Route.TeamSupport teamId ->
+            { model | page = TeamSupport {} } ! []
+
+        Route.TeamBilling teamId ->
+            { model | page = TeamBilling {} } ! []
+
+        Route.TeamPlan teamId ->
+            { model | page = TeamPlan {} } ! []
+
+        Route.TeamMembers teamId ->
+            { model | page = TeamMembers {} } ! []
+
+        Route.TeamAppGroups teamId ->
+            { model | page = TeamAppGroups {} } ! []
+
+        Route.TeamHosting teamId ->
+            { model | page = TeamHosting {} } ! []
+
+        Route.TeamDelete teamId ->
+            { model | page = TeamDelete {} } ! []
+
+        -- USER MANAGEMENT
+        Route.UserInfo ->
+            { model | page = UserInfo {} } ! []
+
+        Route.UserSupport ->
+            { model | page = UserSupport {} } ! []
+
+        Route.UserBilling ->
+            { model | page = UserBilling {} } ! []
+
+        Route.UserPlan ->
+            { model | page = UserPlan {} } ! []
+
+        Route.UserHosting ->
+            { model | page = UserHosting {} } ! []
+
+        Route.UserTeams ->
+            { model | page = UserTeams {} } ! []
+
+        Route.UserDelete ->
+            { model | page = UserDelete {} } ! []
 
 
 
@@ -192,8 +247,43 @@ navigateTo route model =
 type Msg
     = RouteChange Route
     | LoginMsg Login.Msg
+    | RegisterMsg Register.Msg
+    | ForgotPasswordMsg ForgotPassword.Msg
+      -- Authenticated/dashboard routes
     | DashboardMsg Dashboard.Msg
-    | AccountAdminMsg AccountAdmin.Msg
+    | DownloadMsg Download.Msg
+    | NewAppMsg NewApp.Msg
+      -- App management
+    | AppDashMsg AppDash.Msg
+    | AppLogsMsg AppLogs.Msg
+    | AppHistoryMsg AppHistory.Msg
+    | AppDnsMsg AppDns.Msg
+    | AppCertificatesMsg AppCertificates.Msg
+    | AppEvarsMsg AppEvars.Msg
+    | AppBoxfileMsg AppBoxfile.Msg
+    | AppInfoMsg AppInfo.Msg
+    | AppOwnershipMsg AppOwnership.Msg
+    | AppDeployMsg AppDeploy.Msg
+    | AppUpdateMsg AppUpdate.Msg
+    | AppSecurityMsg AppSecurity.Msg
+    | AppDeleteMsg AppDelete.Msg
+      -- Team management
+    | TeamInfoMsg TeamInfo.Msg
+    | TeamSupportMsg TeamSupport.Msg
+    | TeamBillingMsg TeamBilling.Msg
+    | TeamPlanMsg TeamPlan.Msg
+    | TeamMembersMsg TeamMembers.Msg
+    | TeamAppGroupsMsg TeamAppGroups.Msg
+    | TeamHostingMsg TeamHosting.Msg
+    | TeamDeleteMsg TeamDelete.Msg
+      -- User management
+    | UserInfoMsg UserInfo.Msg
+    | UserSupportMsg UserSupport.Msg
+    | UserBillingMsg UserBilling.Msg
+    | UserPlanMsg UserPlan.Msg
+    | UserHostingMsg UserHosting.Msg
+    | UserTeamsMsg UserTeams.Msg
+    | UserDeleteMsg UserDelete.Msg
     | GetUserResponse (Result Http.Error User)
 
 
@@ -217,10 +307,6 @@ update msg model =
             { model | user = Just user } ! []
 
         ( GetUserResponse (Err error), _ ) ->
-            model ! []
-
-        ( _, _ ) ->
-            -- Disregard incoming messages that arrived for the wrong page
             model ! []
 
         ( _, _ ) ->
@@ -254,45 +340,117 @@ userSubscriptions model =
 view : Model -> Html Msg
 view model =
     case model.page of
-        Loading ->
-            div [] [ text "Loading..." ]
-
         NotFound ->
-            Page.NotFound.view (RouteChange <| Route.Dashboard)
+            NotFound.view (RouteChange <| Route.Dashboard)
 
-        Login subModel ->
-            Html.map LoginMsg <| Login.view subModel
+        Login submodel ->
+            Html.map LoginMsg <| Login.view submodel
 
-        Dashboard subModel ->
-            Html.map DashboardMsg <| Dashboard.view subModel
+        Register submodel ->
+            Html.map RegisterMsg <| Register.view submodel
 
-        NewApp ->
-            Html.div [] [ Html.text "New app not implemented" ]
+        ForgotPassword submodel ->
+            Html.map ForgotPasswordMsg <| ForgotPassword.view submodel
 
-        AccountAdmin subModel ->
-            case model.user of
-                Nothing ->
-                    div [] [ text "Loading..." ]
+        Dashboard submodel ->
+            Html.map DashboardMsg <| Dashboard.view model.flags submodel
 
-                Just user ->
-                    Html.map AccountAdminMsg <| AccountAdmin.view subModel user
+        Download submodel ->
+            Html.map DownloadMsg <| Download.view model.flags submodel
 
-        TeamAdmin ->
-            Html.div [] [ Html.text "Team admin not implemented" ]
+        NewApp submodel ->
+            Html.map NewAppMsg <| NewApp.view model.flags submodel
 
-        Download ->
-            Html.div [] [ Html.text "Download not implemented" ]
+        AppDash submodel ->
+            Html.map AppDashMsg <| AppDash.view model.flags submodel
+
+        AppLogs submodel ->
+            Html.map AppLogsMsg <| AppLogs.view model.flags submodel
+
+        AppHistory submodel ->
+            Html.map AppHistoryMsg <| AppHistory.view model.flags submodel
+
+        AppDns submodel ->
+            Html.map AppDnsMsg <| AppDns.view model.flags submodel
+
+        AppCertificates submodel ->
+            Html.map AppCertificatesMsg <| AppCertificates.view model.flags submodel
+
+        AppEvars submodel ->
+            Html.map AppEvarsMsg <| AppEvars.view model.flags submodel
+
+        AppBoxfile submodel ->
+            Html.map AppBoxfileMsg <| AppBoxfile.view model.flags submodel
+
+        AppInfo submodel ->
+            Html.map AppInfoMsg <| AppInfo.view model.flags submodel
+
+        AppOwnership submodel ->
+            Html.map AppOwnershipMsg <| AppOwnership.view model.flags submodel
+
+        AppDeploy submodel ->
+            Html.map AppDeployMsg <| AppDeploy.view model.flags submodel
+
+        AppUpdate submodel ->
+            Html.map AppUpdateMsg <| AppUpdate.view model.flags submodel
+
+        AppSecurity submodel ->
+            Html.map AppSecurityMsg <| AppSecurity.view model.flags submodel
+
+        AppDelete submodel ->
+            Html.map AppDeleteMsg <| AppDelete.view model.flags submodel
+
+        TeamInfo submodel ->
+            Html.map TeamInfoMsg <| TeamInfo.view model.flags submodel
+
+        TeamSupport submodel ->
+            Html.map TeamSupportMsg <| TeamSupport.view model.flags submodel
+
+        TeamBilling submodel ->
+            Html.map TeamBillingMsg <| TeamBilling.view model.flags submodel
+
+        TeamPlan submodel ->
+            Html.map TeamPlanMsg <| TeamPlan.view model.flags submodel
+
+        TeamMembers submodel ->
+            Html.map TeamMembersMsg <| TeamMembers.view model.flags submodel
+
+        TeamAppGroups submodel ->
+            Html.map TeamAppGroupsMsg <| TeamAppGroups.view model.flags submodel
+
+        TeamHosting submodel ->
+            Html.map TeamHostingMsg <| TeamHosting.view model.flags submodel
+
+        TeamDelete submodel ->
+            Html.map TeamDeleteMsg <| TeamDelete.view model.flags submodel
+
+        UserInfo submodel ->
+            Html.map UserInfoMsg <| UserInfo.view model.flags submodel
+
+        UserSupport submodel ->
+            Html.map UserSupportMsg <| UserSupport.view model.flags submodel
+
+        UserBilling submodel ->
+            Html.map UserBillingMsg <| UserBilling.view model.flags submodel
+
+        UserPlan submodel ->
+            Html.map UserPlanMsg <| UserPlan.view model.flags submodel
+
+        UserHosting submodel ->
+            Html.map UserHostingMsg <| UserHosting.view model.flags submodel
+
+        UserTeams submodel ->
+            Html.map UserTeamsMsg <| UserTeams.view model.flags submodel
+
+        UserDelete submodel ->
+            Html.map UserDeleteMsg <| UserDelete.view model.flags submodel
 
 
 
--- div [ class "dashboard" ]
---     [ TopNav.view model.flags AccountMenu.view
---     , page
---     ]
 ---- PROGRAM ----
 
 
-main : Program Flags Model Msg
+main : Program Flag.Flags Model Msg
 main =
     Navigation.programWithFlags (Route.parseRoute >> RouteChange)
         { view = view
