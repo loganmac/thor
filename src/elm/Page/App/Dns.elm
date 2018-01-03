@@ -2,11 +2,9 @@ module Page.App.Dns exposing (..)
 
 -- TODO: not implemented.
 
-import Flag
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Util exposing ((=>))
-import View.AuthedPage as Page
 
 
 -- MODEL
@@ -49,6 +47,6 @@ update msg model =
 -- VIEW
 
 
-view : Flag.Flags -> Model -> Html Msg
-view flags model =
-    Page.view flags <| div [ class "app-dns" ] []
+view : Model -> Html Msg
+view model =
+    div [ class "app-dns" ] []
