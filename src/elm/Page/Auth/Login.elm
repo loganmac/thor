@@ -1,4 +1,4 @@
-module Page.Login exposing (..)
+module Page.Auth.Login exposing (..)
 
 import Html exposing (Html, div, text)
 

@@ -1,11 +1,11 @@
-module Page.Dashboard.App exposing (..)
+module Page.App exposing (..)
 
 import Data.App as App exposing (App)
 import Html exposing (Html)
 import Http
 import Navigation
-import Page.Dashboard.App.Admin as Admin
-import Page.Dashboard.App.Dash as Dash
+import Page.App.Admin as Admin
+import Page.App.Dash as Dash
 import UrlParser as Url exposing ((</>))
 
 
