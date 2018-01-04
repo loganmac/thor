@@ -766,16 +766,26 @@ subscriptions model =
         Authed authedPage ->
             Sub.batch
                 [ -- TODO: user-level subscription
-                  authedSubscriptions authedPage
+                  Sub.map AuthedMsg <| authedSubscriptions authedPage
                 ]
 
 
-authedSubscriptions : AuthedPage -> Sub Msg
+authedSubscriptions : AuthedPage -> Sub AuthedMessage
 authedSubscriptions page =
     case page of
         AppManagement appId page ->
             -- TODO: app-level subscription
+            Sub.map AppMsg <| appSubscriptions page
+
+        _ ->
             Sub.none
+
+
+appSubscriptions : AppPage -> Sub AppMessage
+appSubscriptions page =
+    case page of
+        AppDash model ->
+            Sub.map AppDashMsg <| AppDash.subscriptions model
 
         _ ->
             Sub.none
