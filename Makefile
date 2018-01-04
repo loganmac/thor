@@ -1,5 +1,7 @@
 ELM = elm
 
+.PHONY: all build clean test  
+
 all: install start
 
 api:
@@ -7,8 +9,11 @@ api:
 	@json-server --watch src/js/db.json --port 4000 || \
 	npm install -g json-server && json-server --watch src/js/db.json --port 4000
 
-deploy:
-	@elm-app build && surge -p ./build -d nanobox-demo.surge.sh
+build:
+	@elm-app build
+
+deploy: build
+	surge -p ./build -d nanobox-demo.surge.sh
 
 clean:
 	@echo "Removing build artifacts..."
