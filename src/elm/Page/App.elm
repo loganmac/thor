@@ -1,5 +1,7 @@
 module Page.App exposing (..)
 
+-- TODO: remove/refactor into subpages
+
 import Data.App as App exposing (App)
 import Html exposing (Html)
 import Http

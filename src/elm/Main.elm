@@ -71,7 +71,7 @@ init flags location =
         ( dashboard, cmd ) =
             Dashboard.init
     in
-    navigateTo (Route.parseRoute location)
+    routeTo (Route.parseRoute location)
         { page = Authed <| DashPage <| Dashboard dashboard
         , flags = flags
         , user = Nothing
@@ -169,129 +169,195 @@ type UserPage
     | UserDelete UserDelete.Model
 
 
-navigateTo : Route -> Model -> ( Model, Cmd Msg )
-navigateTo route model =
+routeTo : Route -> Model -> ( Model, Cmd Msg )
+routeTo route model =
     case route of
-        -- TOP LEVEL
+        Route.Unauthed subRoute ->
+            let
+                ( page, cmd ) =
+                    routeUnauthed subRoute model
+            in
+            { model | page = Unauthed page } ! [ cmd ]
+
+        Route.Authed subRoute ->
+            let
+                ( page, cmd ) =
+                    routeAuthed subRoute model
+            in
+            -- TODO: check authentication, possibly redirect to login
+            -- TODO: setup authed subscription here
+            { model | page = Authed page }
+                ! [ User.getUser "190e0469-08a5-47b5-a78b-c88221df3067" GetUserResponse
+                  , cmd
+                  ]
+
+
+routeUnauthed : Route.UnauthedRoute -> Model -> ( UnauthedPage, Cmd Msg )
+routeUnauthed route model =
+    case route of
         Route.NotFound ->
-            { model | page = Unauthed <| NotFound } ! []
+            NotFound ! []
 
         Route.Login ->
-            { model | page = Unauthed <| Login {} } ! []
+            Login {} ! []
 
         Route.Register ->
-            { model | page = Unauthed <| Register {} } ! []
+            Register {} ! []
 
         Route.ForgotPassword ->
-            { model | page = Unauthed <| ForgotPassword {} } ! []
+            ForgotPassword {} ! []
 
+
+routeAuthed : Route.AuthedRoute -> Model -> ( AuthedPage, Cmd Msg )
+routeAuthed route model =
+    case route of
+        Route.Dash subRoute ->
+            let
+                ( page, cmd ) =
+                    routeDash subRoute model
+            in
+            DashPage page ! [ cmd ]
+
+        Route.App appId subRoute ->
+            let
+                ( page, cmd ) =
+                    routeApp subRoute model
+            in
+            -- TODO: setup app subscription here
+            AppManagement appId page ! [ cmd ]
+
+        Route.Team teamId subRoute ->
+            let
+                ( page, cmd ) =
+                    routeTeam subRoute model
+            in
+            TeamManagement teamId page ! [ cmd ]
+
+        Route.User subRoute ->
+            let
+                ( page, cmd ) =
+                    routeUser subRoute model
+            in
+            UserManagement page ! [ cmd ]
+
+
+routeDash : Route.DashboardRoute -> Model -> ( DashboardPage, Cmd Msg )
+routeDash route model =
+    case route of
         Route.Dashboard ->
             let
                 ( dashboard, cmd ) =
                     Dashboard.init
             in
-            { model | page = Authed <| DashPage <| Dashboard dashboard }
-                ! [ User.getUser "190e0469-08a5-47b5-a78b-c88221df3067" GetUserResponse
-                  , Cmd.map DashboardMsg cmd
+            Dashboard dashboard
+                ! [ Cmd.map DashboardMsg cmd
                   ]
 
         Route.Download ->
-            { model | page = Authed <| DashPage <| Download {} } ! []
+            Download {} ! []
 
         Route.NewApp ->
-            { model | page = Authed <| DashPage <| NewApp {} } ! []
+            NewApp {} ! []
 
-        -- APP MANAGEMENT
-        Route.AppDash appId ->
+
+routeApp : Route.AppRoute -> Model -> ( AppPage, Cmd Msg )
+routeApp route model =
+    case route of
+        Route.AppDash ->
             let
                 ( appDash, cmd ) =
                     AppDash.init
             in
-            { model | page = Authed <| AppManagement appId <| AppDash appDash }
-                ! [ Cmd.map AppDashMsg cmd ]
+            AppDash appDash ! [ Cmd.map AppDashMsg cmd ]
 
-        Route.AppLogs appId ->
-            { model | page = Authed <| AppManagement appId <| AppLogs {} } ! []
+        Route.AppLogs ->
+            AppLogs {} ! []
 
-        Route.AppHistory appId ->
-            { model | page = Authed <| AppManagement appId <| AppHistory {} } ! []
+        Route.AppHistory ->
+            AppHistory {} ! []
 
-        Route.AppDns appId ->
-            { model | page = Authed <| AppManagement appId <| AppDns {} } ! []
+        Route.AppDns ->
+            AppDns {} ! []
 
-        Route.AppCertificates appId ->
-            { model | page = Authed <| AppManagement appId <| AppCertificates {} } ! []
+        Route.AppCertificates ->
+            AppCertificates {} ! []
 
-        Route.AppEvars appId ->
-            { model | page = Authed <| AppManagement appId <| AppEvars {} } ! []
+        Route.AppEvars ->
+            AppEvars {} ! []
 
-        Route.AppBoxfile appId ->
-            { model | page = Authed <| AppManagement appId <| AppBoxfile {} } ! []
+        Route.AppBoxfile ->
+            AppBoxfile {} ! []
 
-        Route.AppInfo appId ->
-            { model | page = Authed <| AppManagement appId <| AppInfo {} } ! []
+        Route.AppInfo ->
+            AppInfo {} ! []
 
-        Route.AppOwnership appId ->
-            { model | page = Authed <| AppManagement appId <| AppOwnership {} } ! []
+        Route.AppOwnership ->
+            AppOwnership {} ! []
 
-        Route.AppDeploy appId ->
-            { model | page = Authed <| AppManagement appId <| AppDeploy {} } ! []
+        Route.AppDeploy ->
+            AppDeploy {} ! []
 
-        Route.AppUpdate appId ->
-            { model | page = Authed <| AppManagement appId <| AppUpdate {} } ! []
+        Route.AppUpdate ->
+            AppUpdate {} ! []
 
-        Route.AppSecurity appId ->
-            { model | page = Authed <| AppManagement appId <| AppSecurity {} } ! []
+        Route.AppSecurity ->
+            AppSecurity {} ! []
 
-        Route.AppDelete appId ->
-            { model | page = Authed <| AppManagement appId <| AppDelete {} } ! []
+        Route.AppDelete ->
+            AppDelete {} ! []
 
-        -- TEAM MANAGEMENT
-        Route.TeamInfo teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamInfo {} } ! []
 
-        Route.TeamSupport teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamSupport {} } ! []
+routeTeam : Route.TeamRoute -> Model -> ( TeamPage, Cmd Msg )
+routeTeam route model =
+    case route of
+        Route.TeamInfo ->
+            TeamInfo {} ! []
 
-        Route.TeamBilling teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamBilling {} } ! []
+        Route.TeamSupport ->
+            TeamSupport {} ! []
 
-        Route.TeamPlan teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamPlan {} } ! []
+        Route.TeamBilling ->
+            TeamBilling {} ! []
 
-        Route.TeamMembers teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamMembers {} } ! []
+        Route.TeamPlan ->
+            TeamPlan {} ! []
 
-        Route.TeamAppGroups teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamAppGroups {} } ! []
+        Route.TeamMembers ->
+            TeamMembers {} ! []
 
-        Route.TeamHosting teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamHosting {} } ! []
+        Route.TeamAppGroups ->
+            TeamAppGroups {} ! []
 
-        Route.TeamDelete teamId ->
-            { model | page = Authed <| TeamManagement teamId <| TeamDelete {} } ! []
+        Route.TeamHosting ->
+            TeamHosting {} ! []
 
-        -- USER MANAGEMENT
+        Route.TeamDelete ->
+            TeamDelete {} ! []
+
+
+routeUser : Route.UserRoute -> Model -> ( UserPage, Cmd Msg )
+routeUser route model =
+    case route of
         Route.UserInfo ->
-            { model | page = Authed <| UserManagement <| UserInfo {} } ! []
+            UserInfo {} ! []
 
         Route.UserSupport ->
-            { model | page = Authed <| UserManagement <| UserSupport {} } ! []
+            UserSupport {} ! []
 
         Route.UserBilling ->
-            { model | page = Authed <| UserManagement <| UserBilling {} } ! []
+            UserBilling {} ! []
 
         Route.UserPlan ->
-            { model | page = Authed <| UserManagement <| UserPlan {} } ! []
+            UserPlan {} ! []
 
         Route.UserHosting ->
-            { model | page = Authed <| UserManagement <| UserHosting {} } ! []
+            UserHosting {} ! []
 
         Route.UserTeams ->
-            { model | page = Authed <| UserManagement <| UserTeams {} } ! []
+            UserTeams {} ! []
 
         Route.UserDelete ->
-            { model | page = Authed <| UserManagement <| UserDelete {} } ! []
+            UserDelete {} ! []
 
 
 
@@ -342,36 +408,33 @@ type Msg
 
 
 
--- update : Msg -> Model -> ( Model, Cmd Msg )
--- update msg model =
---     case ( msg, model.page ) of
---         ( RouteChange route, _ ) ->
---             navigateTo route model
---
---         ( LoginMsg subMsg, Login subModel ) ->
---             model ! []
---
---         ( DashboardMsg subMsg, Dashboard subModel ) ->
---             let
---                 ( updated, cmd ) =
---                     Dashboard.update subMsg subModel
---             in
---             { model | page = Dashboard updated } ! [ Cmd.map DashboardMsg cmd ]
---
---         ( GetUserResponse (Ok user), _ ) ->
---             { model | user = Just user } ! []
---
---         ( GetUserResponse (Err error), _ ) ->
---             model ! []
---
---         ( _, _ ) ->
---             -- Disregard incoming messages that arrived for the wrong page
---             model ! []
+-- TODO: split this out into a real update function
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model ! []
+    case ( msg, model.page ) of
+        ( RouteChange route, _ ) ->
+            routeTo route model
+
+        -- ( LoginMsg subMsg, Login subModel ) ->
+        --     model ! []
+        --
+        -- ( DashboardMsg subMsg, Dashboard subModel ) ->
+        --     let
+        --         ( updated, cmd ) =
+        --             Dashboard.update subMsg subModel
+        --     in
+        --     { model | page = Dashboard updated } ! [ Cmd.map DashboardMsg cmd ]
+        --
+        -- ( GetUserResponse (Ok user), _ ) ->
+        --     { model | user = Just user } ! []
+        --
+        -- ( GetUserResponse (Err error), _ ) ->
+        --     model ! []
+        ( _, _ ) ->
+            -- Disregard incoming messages that arrived for the wrong page
+            model ! []
 
 
 
@@ -425,7 +488,8 @@ viewUnauthedPage : UnauthedPage -> Html Msg
 viewUnauthedPage page =
     case page of
         NotFound ->
-            NotFound.view (RouteChange <| Route.Dashboard)
+            NotFound.view
+                (RouteChange <| Route.Authed <| Route.Dash <| Route.Dashboard)
 
         Login submodel ->
             Html.map LoginMsg <| Login.view submodel
