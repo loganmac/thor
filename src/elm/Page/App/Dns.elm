@@ -2,6 +2,7 @@ module Page.App.Dns exposing (..)
 
 -- TODO: not implemented.
 
+import Data.App exposing (App)
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Util exposing ((=>))
@@ -47,6 +48,6 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
+view : Model -> App -> Html Msg
+view model app =
     div [ class "app-dns" ] []

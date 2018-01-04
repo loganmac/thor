@@ -1,10 +1,9 @@
 module Page.App.Delete exposing (..)
 
--- TODO: not implemented.
-
-import Html exposing (Html, div)
+import Data.App exposing (App)
+import Html exposing (Html, button, div, strong, text)
 import Html.Attributes exposing (class)
-import Util exposing ((=>))
+import Html.Events exposing (onClick)
 
 
 -- MODEL
@@ -33,13 +32,14 @@ subscriptions model =
 
 
 type Msg
-    = NoOp
+    = DeleteApp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
+        DeleteApp ->
+            --TODO: make this do the whole confirm dialog, then delete app
             model ! []
 
 
@@ -47,6 +47,11 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
-    div [ class "app-delete" ] []
+view : Model -> App -> Html Msg
+view model app =
+    div [ class "app-delete" ]
+        [ div [ class "warning" ]
+            [ strong [] [ text "!" ], text "DANGER ZONE", strong [] [ text "!" ] ]
+        , div [ class "subtext" ] [ text "BEWARE! THIS CANNOT BE UNDONE!" ]
+        , button [ class "basic-button danger-inverse", onClick DeleteApp ] [ text "Delete App" ]
+        ]

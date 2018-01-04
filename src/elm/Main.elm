@@ -265,22 +265,46 @@ routeApp route model =
             AppBoxfile {} ! []
 
         Route.AppInfo ->
-            AppInfo {} ! []
+            let
+                ( updated, cmd ) =
+                    AppInfo.init
+            in
+            AppInfo updated ! [ Cmd.map AppInfoMsg cmd ]
 
         Route.AppOwnership ->
-            AppOwnership {} ! []
+            let
+                ( updated, cmd ) =
+                    AppOwnership.init
+            in
+            AppOwnership updated ! [ Cmd.map AppOwnershipMsg cmd ]
 
         Route.AppDeploy ->
-            AppDeploy {} ! []
+            let
+                ( updated, cmd ) =
+                    AppDeploy.init
+            in
+            AppDeploy updated ! [ Cmd.map AppDeployMsg cmd ]
 
         Route.AppUpdate ->
-            AppUpdate {} ! []
+            let
+                ( updated, cmd ) =
+                    AppUpdate.init
+            in
+            AppUpdate updated ! [ Cmd.map AppUpdateMsg cmd ]
 
         Route.AppSecurity ->
-            AppSecurity {} ! []
+            let
+                ( updated, cmd ) =
+                    AppSecurity.init
+            in
+            AppSecurity updated ! [ Cmd.map AppSecurityMsg cmd ]
 
         Route.AppDelete ->
-            AppDelete {} ! []
+            let
+                ( updated, cmd ) =
+                    AppDelete.init
+            in
+            AppDelete updated ! [ Cmd.map AppDeleteMsg cmd ]
 
 
 routeTeam : Route.TeamRoute -> Model -> ( TeamPage, Cmd TeamMessage )
@@ -806,7 +830,7 @@ view model =
         Authed page ->
             div [ class "authed-page" ]
                 [ TopNav.view model.flags AccountMenu.view
-                , Html.map AuthedMsg <| viewAuthedPage page
+                , Html.map AuthedMsg <| viewAuthedPage page model.app
                 ]
 
 
@@ -833,14 +857,15 @@ viewUnauthedPage page =
                     ForgotPassword.view submodel
 
 
-viewAuthedPage : AuthedPage -> Html AuthedMessage
-viewAuthedPage page =
+viewAuthedPage : AuthedPage -> Maybe App -> Html AuthedMessage
+viewAuthedPage page app =
     case page of
         DashPage page ->
             Html.map DashMsg <| viewDashboardPage page
 
         AppManagement idApp page ->
-            Html.map AppMsg <| viewAppPage page
+            -- TODO: "app wrapper", loading, convert Maybe App to App
+            Html.map AppMsg <| viewAppPage page (Maybe.withDefault App.initialModel app)
 
         TeamManagement idTeam page ->
             Html.map TeamMsg <| viewTeamPage page
@@ -862,47 +887,47 @@ viewDashboardPage page =
             Html.map NewAppMsg <| NewApp.view submodel
 
 
-viewAppPage : AppPage -> Html AppMessage
-viewAppPage page =
+viewAppPage : AppPage -> App -> Html AppMessage
+viewAppPage page app =
     case page of
         AppDash submodel ->
-            Html.map AppDashMsg <| AppDash.view submodel
+            Html.map AppDashMsg <| AppDash.view submodel app
 
         AppLogs submodel ->
-            Html.map AppLogsMsg <| AppLogs.view submodel
+            Html.map AppLogsMsg <| AppLogs.view submodel app
 
         AppHistory submodel ->
-            Html.map AppHistoryMsg <| AppHistory.view submodel
+            Html.map AppHistoryMsg <| AppHistory.view submodel app
 
         AppDns submodel ->
-            Html.map AppDnsMsg <| AppDns.view submodel
+            Html.map AppDnsMsg <| AppDns.view submodel app
 
         AppCertificates submodel ->
-            Html.map AppCertificatesMsg <| AppCertificates.view submodel
+            Html.map AppCertificatesMsg <| AppCertificates.view submodel app
 
         AppEvars submodel ->
-            Html.map AppEvarsMsg <| AppEvars.view submodel
+            Html.map AppEvarsMsg <| AppEvars.view submodel app
 
         AppBoxfile submodel ->
-            Html.map AppBoxfileMsg <| AppBoxfile.view submodel
+            Html.map AppBoxfileMsg <| AppBoxfile.view submodel app
 
         AppInfo submodel ->
-            Html.map AppInfoMsg <| AppInfo.view submodel
+            Html.map AppInfoMsg <| AppInfo.view submodel app
 
         AppOwnership submodel ->
-            Html.map AppOwnershipMsg <| AppOwnership.view submodel
+            Html.map AppOwnershipMsg <| AppOwnership.view submodel app
 
         AppDeploy submodel ->
-            Html.map AppDeployMsg <| AppDeploy.view submodel
+            Html.map AppDeployMsg <| AppDeploy.view submodel app
 
         AppUpdate submodel ->
-            Html.map AppUpdateMsg <| AppUpdate.view submodel
+            Html.map AppUpdateMsg <| AppUpdate.view submodel app
 
         AppSecurity submodel ->
-            Html.map AppSecurityMsg <| AppSecurity.view submodel
+            Html.map AppSecurityMsg <| AppSecurity.view submodel app
 
         AppDelete submodel ->
-            Html.map AppDeleteMsg <| AppDelete.view submodel
+            Html.map AppDeleteMsg <| AppDelete.view submodel app
 
 
 viewTeamPage : TeamPage -> Html TeamMessage

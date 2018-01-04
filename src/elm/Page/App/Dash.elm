@@ -1,5 +1,6 @@
 module Page.App.Dash exposing (..)
 
+import Data.App exposing (App)
 import Data.AppDash as AppDash exposing (AppDash)
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html, div, h1, text)
@@ -77,8 +78,8 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
+view : Model -> App -> Html Msg
+view model app =
     div [ class "app-dash" ]
         [ -- view app details
           div [ class "app-dash hosts" ] <|
