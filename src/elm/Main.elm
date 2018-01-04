@@ -88,19 +88,11 @@ type Page
     | Authed AuthedPage
 
 
-
--- Pages that don't require authentication
-
-
 type UnauthedPage
     = NotFound
     | Login Login.Model
     | Register Register.Model
     | ForgotPassword ForgotPassword.Model
-
-
-
--- Authenticated pages
 
 
 type AuthedPage
@@ -110,18 +102,10 @@ type AuthedPage
     | DashPage DashboardPage
 
 
-
--- Dashboard
-
-
 type DashboardPage
     = Dashboard Dashboard.Model
     | Download Download.Model
     | NewApp NewApp.Model
-
-
-
--- App management
 
 
 type AppPage
@@ -140,10 +124,6 @@ type AppPage
     | AppDelete AppDelete.Model
 
 
-
--- Team management
-
-
 type TeamPage
     = TeamInfo TeamInfo.Model
     | TeamSupport TeamSupport.Model
@@ -153,10 +133,6 @@ type TeamPage
     | TeamAppGroups TeamAppGroups.Model
     | TeamHosting TeamHosting.Model
     | TeamDelete TeamDelete.Model
-
-
-
--- User management
 
 
 type UserPage
