@@ -194,13 +194,25 @@ routeAuthed route model =
             in
             DashPage page ! [ Cmd.map DashMsg cmd ]
 
-        Route.App appId subRoute ->
+        Route.App ((App.Id id) as appId) subRoute ->
             let
+                app =
+                    Maybe.withDefault App.initialModel model.app
+
                 ( page, cmd ) =
                     routeApp subRoute model
+
+                fetchApp =
+                    if app.id == appId then
+                        Cmd.none
+                    else
+                        App.getApp id GetAppResponse
             in
             -- TODO: setup app subscription here
-            AppManagement appId page ! [ Cmd.map AppMsg cmd ]
+            AppManagement appId page
+                ! [ fetchApp
+                  , Cmd.map AppMsg cmd
+                  ]
 
         Route.Team teamId subRoute ->
             let
@@ -339,7 +351,11 @@ routeUser : Route.UserRoute -> Model -> ( UserPage, Cmd UserMessage )
 routeUser route model =
     case route of
         Route.UserInfo ->
-            UserInfo {} ! []
+            let
+                ( updated, cmd ) =
+                    UserInfo.init
+            in
+            UserInfo updated ! [ Cmd.map UserInfoMsg cmd ]
 
         Route.UserSupport ->
             UserSupport {} ! []
@@ -366,9 +382,9 @@ routeUser route model =
 
 type Msg
     = RouteChange Route
+    | GetUserResponse (Result Http.Error User)
     | UnauthedMsg UnauthedMessage
     | AuthedMsg AuthedMessage
-    | GetUserResponse (Result Http.Error User)
 
 
 type UnauthedMessage
@@ -378,7 +394,8 @@ type UnauthedMessage
 
 
 type AuthedMessage
-    = DashMsg DashMessage
+    = GetAppResponse (Result Http.Error App)
+    | DashMsg DashMessage
     | AppMsg AppMessage
     | TeamMsg TeamMessage
     | UserMsg UserMessage
@@ -427,15 +444,25 @@ type UserMessage
     | UserDeleteMsg UserDelete.Msg
 
 
-
--- TODO: split this out into a real update function
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
         ( RouteChange route, _ ) ->
             routeTo route model
+
+        ( GetUserResponse (Ok user), _ ) ->
+            { model | user = Just user } ! []
+
+        ( GetUserResponse (Err error), _ ) ->
+            model ! []
+
+        ( AuthedMsg (GetAppResponse (Ok app)), _ ) ->
+            { model | app = Just app } ! []
+
+        ( AuthedMsg (GetAppResponse (Err error)), _ ) ->
+            -- TODO: Don't swallow error, show error or go
+            -- to not found on an invalid url
+            model ! [ Navigation.newUrl "#not-found" ]
 
         ( UnauthedMsg subMsg, Unauthed page ) ->
             let
@@ -450,12 +477,6 @@ update msg model =
                     updateAuthed subMsg page
             in
             { model | page = Authed newPage } ! [ Cmd.map AuthedMsg cmd ]
-
-        ( GetUserResponse (Ok user), _ ) ->
-            { model | user = Just user } ! []
-
-        ( GetUserResponse (Err error), _ ) ->
-            model ! []
 
         ( _, _ ) ->
             -- Disregard incoming messages that arrived for the wrong page
@@ -830,7 +851,11 @@ view model =
         Authed page ->
             div [ class "authed-page" ]
                 [ TopNav.view model.flags AccountMenu.view
-                , Html.map AuthedMsg <| viewAuthedPage page model.app
+
+                -- TODO: show loading if user data not available
+                , Html.map AuthedMsg <|
+                    viewAuthedPage page model.app <|
+                        Maybe.withDefault User.initialModel model.user
                 ]
 
 
@@ -857,8 +882,8 @@ viewUnauthedPage page =
                     ForgotPassword.view submodel
 
 
-viewAuthedPage : AuthedPage -> Maybe App -> Html AuthedMessage
-viewAuthedPage page app =
+viewAuthedPage : AuthedPage -> Maybe App -> User -> Html AuthedMessage
+viewAuthedPage page app user =
     case page of
         DashPage page ->
             Html.map DashMsg <| viewDashboardPage page
@@ -871,7 +896,7 @@ viewAuthedPage page app =
             Html.map TeamMsg <| viewTeamPage page
 
         UserManagement page ->
-            Html.map UserMsg <| viewUserPage page
+            Html.map UserMsg <| viewUserPage page user
 
 
 viewDashboardPage : DashboardPage -> Html DashMessage
@@ -958,11 +983,11 @@ viewTeamPage page =
             Html.map TeamDeleteMsg <| TeamDelete.view submodel
 
 
-viewUserPage : UserPage -> Html UserMessage
-viewUserPage page =
+viewUserPage : UserPage -> User -> Html UserMessage
+viewUserPage page user =
     case page of
         UserInfo submodel ->
-            Html.map UserInfoMsg <| UserInfo.view submodel
+            Html.map UserInfoMsg <| UserInfo.view submodel user
 
         UserSupport submodel ->
             Html.map UserSupportMsg <| UserSupport.view submodel

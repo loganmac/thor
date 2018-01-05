@@ -2,9 +2,8 @@ module Page.User.Delete exposing (..)
 
 -- TODO: not implemented.
 
-import Html exposing (Html, div)
+import Html exposing (Html, button, div, strong, text)
 import Html.Attributes exposing (class)
-import Util exposing ((=>))
 
 
 -- MODEL
@@ -49,4 +48,9 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "user-delete" ] []
+    div [ class "user-delete" ]
+        [ div [ class "warning" ]
+            [ strong [] [ text "!" ], text "DANGER ZONE", strong [] [ text "!" ] ]
+        , div [ class "subtext" ] [ text "BEWARE! THIS CANNOT BE UNDONE!" ]
+        , button [ class "basic-button danger-inverse" ] [ text "Delete Account" ]
+        ]

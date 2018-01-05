@@ -1,161 +1,168 @@
-.app-admin {
-  .app-info {
-    input {
-      width: 100%;
-    }
-
-    .save-section {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin-bottom: 20px;
-
-      &.hidden {
-        opacity: 0;
-      }
-    }
+.app-info {
+  input {
+    width: 100%;
   }
 
-  .app-ownership {
-    .view-ownership {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 50px auto;
-      > * {
-        margin: 10px;
-      }
-    }
-    .change-ownership {
-      .txt {
-        @extend .font-normal;
-      }
-      .section {
-        margin: 20px 0px;
-        .save-section {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          margin: 30px 0px;
-
-          &.hidden {
-            opacity: 0;
-          }
-        }
-        .important {
-          color: $hot;
-        }
-        strong {
-          color: $hot;
-        }
-        select {
-          width: 100%;
-        }
-      }
-    }
-  }
-
-  .app-deploy {
-    .save-section {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin: 30px 0px;
-
-      &.hidden {
-        opacity: 0;
-      }
-    }
-  }
-
-  .app-update {
-    .section {
-      @extend .font-normal;
-      display: flex;
-      align-items: center;
-      padding: 30px 0;
-      white-space: pre-line;
-
-      .basic-button {
-        white-space: nowrap;
-      }
-
-      .button-text {
-        margin-left: 60px;
-      }
-    }
-  }
-
-  .app-security {
-    margin-right: 70px;
-    .blurb {
-      @extend .font-normal;
-
-      strong {
-        font-style: normal;
-      }
-
-      a {
-        color: $blue-9;
-      }
-    }
-    .section {
-      margin: 30px 0px;
-
-      .code-box {
-        @extend .font-code-yellow;
-        word-wrap: break-word;
-
-        strong {
-          @extend .font-code-blue;
-        }
-        .code {
-          padding: 20px;
-        }
-      }
-    }
-    hr {
-      border: none;
-      margin: 40px 0;
-      border-bottom: 1px solid $canvas-8;
-    }
-  }
-
-  .app-delete {
-    background: repeating-linear-gradient(
-      45deg,
-      $danger ,
-      $danger 5px,
-      $danger-1 6px
-    );
-    color: $white;
+  .save-section {
     display: flex;
     align-items: center;
-    flex-direction: column;
+    justify-content: flex-end;
+    margin-bottom: 20px;
 
-    border-radius: 4px;
-    .warning {
-      font-size: 24px;
-      font-weight: $bold;
-      margin: 30px 0px;
+    &.hidden {
+      opacity: 0;
+    }
+  }
+}
+
+.app-ownership {
+  .view-ownership {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 50px auto;
+
+    > * {
+      margin: 10px;
+    }
+  }
+
+  .change-ownership {
+    .txt {
+      @extend .font-normal;
+    }
+
+    .section {
+      margin: 20px 0;
+
+      .save-section {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 30px 0;
+
+        &.hidden {
+          opacity: 0;
+        }
+      }
+
+      .important {
+        color: $hot;
+      }
+
       strong {
-        position: relative;
-        font-size: 36px;
-        margin: 0px 20px;
-        bottom: 7px;
+        color: $hot;
+      }
+
+      select {
+        width: 100%;
       }
     }
-    .subtext {
-      width: 100%;
-      text-align: center;
-      font-weight: $bold;
-      background-color: $danger-dark;
-      color: $danger;
-      align-items: center;
-      padding: 20px 0px;
+  }
+}
+
+.app-deploy {
+  .save-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 30px 0;
+
+    &.hidden {
+      opacity: 0;
     }
+  }
+}
+
+.app-update {
+  .section {
+    @extend .font-normal;
+    display: flex;
+    align-items: center;
+    padding: 30px 0;
+    white-space: pre-line;
+
     .basic-button {
-      margin: 50px 0px;
+      white-space: nowrap;
     }
+
+    .button-text {
+      margin-left: 60px;
+    }
+  }
+}
+
+.app-security {
+  margin-right: 70px;
+
+  .blurb {
+    @extend .font-normal;
+
+    strong {
+      font-style: normal;
+    }
+
+    a {
+      color: $blue-9;
+    }
+  }
+
+  .section {
+    margin: 30px 0;
+
+    .code-box {
+      @extend .font-code-yellow;
+      word-wrap: break-word;
+
+      strong {
+        @extend .font-code-blue;
+      }
+
+      .code {
+        padding: 20px;
+      }
+    }
+  }
+
+  hr {
+    border: none;
+    margin: 40px 0;
+    border-bottom: 1px solid $canvas-8;
+  }
+}
+
+.app-delete {
+  background: repeating-linear-gradient(45deg, $danger , $danger 5px, $danger-1 6px);
+  color: $white;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 4px;
+
+  .warning {
+    font-size: 24px;
+    font-weight: $bold;
+    margin: 30px 0;
+
+    strong {
+      position: relative;
+      font-size: 36px;
+      margin: 0 20px;
+      bottom: 7px;
+    }
+  }
+
+  .subtext {
+    width: 100%;
+    text-align: center;
+    font-weight: $bold;
+    background-color: $danger-dark;
+    color: $danger;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  .basic-button {
+    margin: 50px 0;
   }
 }
