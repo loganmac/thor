@@ -10,6 +10,6 @@ import Util exposing ((=>))
 -- VIEW
 
 
-view : msg -> Html msg
-view msg =
+view : Html msg
+view =
     div [ class "not-found" ] [ text "Not Found not yet implemented" ]

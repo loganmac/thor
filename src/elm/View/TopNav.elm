@@ -1,7 +1,8 @@
 module View.TopNav exposing (..)
 
-import Html exposing (Attribute, Html, div, img, text)
+import Html exposing (Attribute, Html, a, div, img, text)
 import Html.Attributes exposing (alt, class, src)
+import Route as Route exposing (Route)
 
 
 -- MODEL
@@ -21,18 +22,22 @@ type alias LogoPaths r =
 
 view : LogoPaths r -> Html msg -> Html msg
 view model inner =
+    let
+        ( homeLink, _ ) =
+            Route.linkTo (Route.Authed <| Route.Dash <| Route.Dashboard)
+    in
     div [ class "top-nav" ]
         [ div [ class "logo" ]
             [ img [ src model.logoPath ] []
-            , div [ class "txt caps" ] [ text "Nanobox" ]
+            , a [ class "txt caps", homeLink ] [ text "Nanobox" ]
             ]
         , div [ class "link" ]
             [ img [ src model.homeLogoPath ] []
-            , div [ class "txt" ] [ text "Home" ]
+            , a [ class "txt", homeLink ] [ text "Home" ]
             ]
         , div [ class "link" ]
             [ img [ src model.supportLogoPath ] []
-            , div [ class "txt" ] [ text "Support" ]
+            , a [ class "txt" ] [ text "Support" ]
             ]
         , inner
         ]

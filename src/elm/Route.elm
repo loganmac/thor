@@ -2,8 +2,19 @@ module Route exposing (..)
 
 import Data.App as App
 import Data.Team as Team
+import Html exposing (Attribute)
+import Html.Attributes exposing (href)
 import Navigation exposing (Location)
 import UrlParser as Url exposing ((</>))
+import Util exposing ((=>))
+
+
+type alias RouteName =
+    String
+
+
+type alias RouteUrl =
+    String
 
 
 type Route
@@ -129,7 +140,7 @@ appRoutes =
 teamRoutes : Url.Parser (TeamRoute -> a) a
 teamRoutes =
     Url.oneOf
-        [ Url.map TeamInfo <| Url.s "admin"
+        [ Url.map TeamInfo <| Url.s "info"
         , Url.map TeamSupport <| Url.s "support"
         , Url.map TeamBilling <| Url.s "billing"
         , Url.map TeamPlan <| Url.s "plan"
@@ -145,11 +156,179 @@ userRoutes =
     Url.oneOf
         [ Url.map UserInfo <| Url.s "info"
         , Url.map UserSupport <| Url.s "support"
+        , Url.map UserBilling <| Url.s "billing"
         , Url.map UserPlan <| Url.s "plan"
         , Url.map UserHosting <| Url.s "hosting"
         , Url.map UserTeams <| Url.s "teams"
         , Url.map UserDelete <| Url.s "delete"
         ]
+
+
+routeToLink : Route -> ( RouteUrl, RouteName )
+routeToLink route =
+    let
+        ( pieces, name ) =
+            case route of
+                Unauthed subRoute ->
+                    unauthedToLink subRoute
+
+                Authed subRoute ->
+                    authedToLink subRoute
+    in
+    "#/" ++ String.join "/" pieces => name
+
+
+unauthedToLink : UnauthedRoute -> ( List String, RouteName )
+unauthedToLink route =
+    case route of
+        NotFound ->
+            [ "not-found" ] => "Not Found"
+
+        Login ->
+            [ "login" ] => "Login"
+
+        Register ->
+            [ "register" ] => "Register"
+
+        ForgotPassword ->
+            [ "forgot-password" ] => "Forgot Password"
+
+
+authedToLink : AuthedRoute -> ( List String, RouteName )
+authedToLink route =
+    case route of
+        Dash subRoute ->
+            dashToLink subRoute
+
+        App (App.Id appId) subRoute ->
+            let
+                ( link, name ) =
+                    appToLink subRoute
+            in
+            [ "apps", appId ] ++ link => name
+
+        Team (Team.Id teamId) subRoute ->
+            let
+                ( link, name ) =
+                    teamToLink subRoute
+            in
+            [ "teams", teamId ] ++ link => name
+
+        User subRoute ->
+            let
+                ( link, name ) =
+                    userToLink subRoute
+            in
+            [ "user" ] ++ link => name
+
+
+dashToLink : DashboardRoute -> ( List String, RouteName )
+dashToLink route =
+    case route of
+        Dashboard ->
+            [ "apps" ] => "Dashboard"
+
+        Download ->
+            [ "download" ] => "Download"
+
+        NewApp ->
+            [ "apps", "new" ] => "New App"
+
+
+appToLink : AppRoute -> ( List String, RouteName )
+appToLink route =
+    case route of
+        AppDash ->
+            [] => "Dash"
+
+        AppLogs ->
+            [ "logs" ] => "Logs"
+
+        AppHistory ->
+            [ "history" ] => "Deploy History"
+
+        AppDns ->
+            [ "dns" ] => "DNS"
+
+        AppCertificates ->
+            [ "certificates" ] => "SSL/TLS Certificates"
+
+        AppEvars ->
+            [ "evars" ] => "Environment Variables"
+
+        AppBoxfile ->
+            [ "boxfile" ] => "boxfile.yml"
+
+        AppInfo ->
+            [ "info" ] => "App Info"
+
+        AppOwnership ->
+            [ "ownership" ] => "Ownership"
+
+        AppDeploy ->
+            [ "deploy" ] => "Deploy"
+
+        AppUpdate ->
+            [ "update" ] => "Update Platform"
+
+        AppSecurity ->
+            [ "security" ] => "Security"
+
+        AppDelete ->
+            [ "delete" ] => "Delete"
+
+
+teamToLink : TeamRoute -> ( List String, RouteName )
+teamToLink route =
+    case route of
+        TeamInfo ->
+            [ "info" ] => "Info"
+
+        TeamSupport ->
+            [ "support" ] => "Support"
+
+        TeamBilling ->
+            [ "billing" ] => "Billing"
+
+        TeamPlan ->
+            [ "plan" ] => "Plan"
+
+        TeamMembers ->
+            [ "members" ] => "Members"
+
+        TeamAppGroups ->
+            [ "app-groups" ] => "App Groups"
+
+        TeamHosting ->
+            [ "hosting" ] => "Hosting"
+
+        TeamDelete ->
+            [ "delete" ] => "Delete"
+
+
+userToLink : UserRoute -> ( List String, RouteName )
+userToLink route =
+    case route of
+        UserInfo ->
+            [ "info" ] => "Info"
+
+        UserSupport ->
+            [ "support" ] => "Support"
+
+        UserBilling ->
+            [ "billing" ] => "Billing"
+
+        UserPlan ->
+            [ "plan" ] => "Plan"
+
+        UserHosting ->
+            [ "hosting" ] => "Hosting"
+
+        UserTeams ->
+            [ "teams" ] => "Teams"
+
+        UserDelete ->
+            [ "delete" ] => "Delete"
 
 
 parseRoute : Location -> Route
@@ -163,3 +342,21 @@ parseRoute location =
 
             Nothing ->
                 Unauthed <| NotFound
+
+
+linkTo : Route -> ( Attribute msg, String )
+linkTo route =
+    let
+        ( link, name ) =
+            routeToLink route
+    in
+    href link => name
+
+
+modifyUrl : Route -> Cmd msg
+modifyUrl route =
+    let
+        ( link, _ ) =
+            routeToLink route
+    in
+    Navigation.modifyUrl <| link

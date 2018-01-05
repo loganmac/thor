@@ -1,20 +1,22 @@
 module View.Corral exposing (..)
 
-import Html exposing (Attribute, Html, div, text)
+import Html exposing (Attribute, Html, a, div, text)
 import Html.Attributes exposing (class, classList)
-import Html.Events exposing (onClick)
 import Util exposing ((=>))
 
 
 -- MODEL
 
 
-type alias Corral =
-    { activeItem : String
-    }
+type alias ActiveRoute =
+    String
 
 
-type alias Id =
+type alias Title =
+    String
+
+
+type alias Text =
     String
 
 
@@ -22,37 +24,31 @@ type alias Id =
 -- VIEW
 
 
-view : Corral -> String -> (Id -> msg) -> List ( Id, Html msg ) -> Html msg
-view model title toMsg inner =
+view : Title -> ActiveRoute -> List ( Attribute msg, Text ) -> Html msg -> Html msg
+view title activeRoute links inner =
     div [ class "corral" ]
         [ div [ class "nav" ]
             [ div [ class "section-title" ]
                 [ text title ]
             , div [ class "nav-bar" ] <|
-                List.map (viewNavItem model toMsg) inner
+                List.map (viewNavItem activeRoute) links
             ]
         , div [ class "content" ]
-            [ div [ class "section-title" ] [ text model.activeItem ]
-            , div [ class "content" ] <|
-                List.map viewTabContent <|
-                    List.filter (\( i, _ ) -> model.activeItem == i) inner
+            [ div [ class "section-title" ] [ text activeRoute ]
+            , div [ class "content" ]
+                [ div [ class "content-item" ] [ inner ]
+                ]
             ]
         ]
 
 
-viewNavItem : Corral -> (Id -> msg) -> ( Id, Html msg ) -> Html msg
-viewNavItem model toMsg ( id, _ ) =
-    div
+viewNavItem : ActiveRoute -> ( Attribute msg, Text ) -> Html msg
+viewNavItem activeRoute ( link, linkText ) =
+    a
         [ classList
             [ "nav-item" => True
-            , "active" => id == model.activeItem
+            , "active" => activeRoute == linkText
             ]
-        , onClick <| toMsg id
+        , link
         ]
-        [ text id ]
-
-
-viewTabContent : ( Id, Html msg ) -> Html msg
-viewTabContent ( id, content ) =
-    div [ class "content-item" ]
-        [ content ]
+        [ text linkText ]

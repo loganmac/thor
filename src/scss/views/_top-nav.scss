@@ -35,6 +35,9 @@
       width: 10px;
       margin-right: 7px;
     }
+    a:visited {
+      color: $code-bg;
+    }
     &:hover {
       .txt {
         color : $lake;

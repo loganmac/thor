@@ -1,4 +1,4 @@
-.account-info {
+.user-info {
   .section {
     display: flex;
     flex-direction: row;
@@ -23,7 +23,7 @@
   }
 }
 
-.account-delete {
+.user-delete {
   background: repeating-linear-gradient(45deg, $danger , $danger 5px, $danger-1 6px);
   color: $white;
   display: flex;
