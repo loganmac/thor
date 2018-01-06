@@ -6,6 +6,7 @@ import Data.User as User exposing (User)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Http
+import Json.Decode
 import Navigation exposing (Location)
 import Page.App.Boxfile as AppBoxfile
 import Page.App.Certificates as AppCertificates
@@ -42,7 +43,9 @@ import Page.User.Info as UserInfo
 import Page.User.Plan as UserPlan
 import Page.User.Support as UserSupport
 import Page.User.Teams as UserTeams
+import Port
 import Route exposing (Route)
+import Util
 import View.AccountMenu as AccountMenu
 import View.Corral as Corral
 import View.TopNav as TopNav
@@ -61,7 +64,8 @@ type alias Model =
 
 
 type alias Flags =
-    { logoPath : String
+    { session : Json.Decode.Value
+    , logoPath : String
     , homeLogoPath : String
     , supportLogoPath : String
     }
@@ -76,7 +80,7 @@ init flags location =
     routeTo (Route.parseRoute location)
         { page = Authed <| DashPage <| Dashboard dashboard
         , flags = flags
-        , user = Nothing
+        , user = User.fromSession flags.session
         , app = Nothing
         , activeRoute = Route.parseRoute location
         }
@@ -159,15 +163,22 @@ routeTo route model =
             { model | page = Unauthed page } ! [ Cmd.map UnauthedMsg cmd ]
 
         Route.Authed subRoute ->
-            let
-                ( page, cmd ) =
-                    routeAuthed subRoute model
-            in
-            -- TODO: check authentication, possibly redirect to login
-            -- TODO: setup authed subscription here
-            { model | page = Authed page }
-                ! [ User.getUser "190e0469-08a5-47b5-a78b-c88221df3067" GetUserResponse
-                  , Cmd.map AuthedMsg cmd
+            -- TODO: setup authed subscription here?
+            case model.user of
+                Just user ->
+                    let
+                        ( page, cmd ) =
+                            routeAuthed subRoute model user
+                    in
+                    { model | page = Authed page } ! [ Cmd.map AuthedMsg cmd ]
+
+                Nothing ->
+                    model ! [ Route.modifyUrl <| Route.Unauthed <| Route.Login ]
+
+        Route.LogOut ->
+            { model | user = Nothing }
+                ! [ Port.storeSession Nothing
+                  , Route.modifyUrl Route.home
                   ]
 
 
@@ -178,7 +189,12 @@ routeUnauthed route model =
             NotFound ! []
 
         Route.Login ->
-            Login {} ! []
+            case model.user of
+                Just user ->
+                    Login Login.init ! [ Route.modifyUrl Route.home ]
+
+                Nothing ->
+                    Login Login.init ! []
 
         Route.Register ->
             Register {} ! []
@@ -187,8 +203,8 @@ routeUnauthed route model =
             ForgotPassword {} ! []
 
 
-routeAuthed : Route.AuthedRoute -> Model -> ( AuthedPage, Cmd AuthedMessage )
-routeAuthed route model =
+routeAuthed : Route.AuthedRoute -> Model -> User -> ( AuthedPage, Cmd AuthedMessage )
+routeAuthed route model user =
     case route of
         Route.Dash subRoute ->
             let
@@ -209,9 +225,9 @@ routeAuthed route model =
                     if app.id == appId then
                         Cmd.none
                     else
-                        App.getApp id GetAppResponse
+                        App.getApp id (Just user.authToken) GetAppResponse
             in
-            -- TODO: setup app subscription here
+            -- TODO: setup app subscription here?
             AppManagement appId page
                 ! [ fetchApp
                   , Cmd.map AppMsg cmd
@@ -394,6 +410,7 @@ type UnauthedMessage
     = LoginMsg Login.Msg
     | RegisterMsg Register.Msg
     | ForgotPasswordMsg ForgotPassword.Msg
+    | SetUser User
 
 
 type AuthedMessage
@@ -467,6 +484,12 @@ update msg model =
             -- to not found on an invalid url
             model ! [ Navigation.newUrl "#not-found" ]
 
+        ( UnauthedMsg (SetUser user), _ ) ->
+            { model | user = Just user }
+                ! [ User.storeSession user
+                  , Route.modifyUrl Route.home
+                  ]
+
         ( UnauthedMsg subMsg, Unauthed page ) ->
             let
                 ( newPage, cmd ) =
@@ -489,30 +512,38 @@ update msg model =
 updateUnauthed : UnauthedMessage -> UnauthedPage -> ( UnauthedPage, Cmd UnauthedMessage )
 updateUnauthed msg page =
     case ( msg, page ) of
-        ( LoginMsg subMsg, Login model ) ->
+        ( LoginMsg subMsg, Login subModel ) ->
             let
-                ( newPage, cmd ) =
-                    Login.update subMsg model
-            in
-            Login newPage ! [ Cmd.map LoginMsg cmd ]
+                ( newPage, cmd, maybeUser ) =
+                    Login.update subMsg subModel
 
-        ( RegisterMsg subMsg, Register model ) ->
-            let
-                ( newPage, cmd ) =
-                    Register.update subMsg model
-            in
-            Register newPage ! [ Cmd.map RegisterMsg cmd ]
+                setUser =
+                    case maybeUser of
+                        Just user ->
+                            Util.send <| SetUser user
 
-        ( ForgotPasswordMsg subMsg, ForgotPassword model ) ->
+                        Nothing ->
+                            Cmd.none
+            in
+            ( Login newPage, Cmd.batch [ Cmd.map LoginMsg cmd, setUser ] )
+
+        ( RegisterMsg subMsg, Register subModel ) ->
             let
                 ( newPage, cmd ) =
-                    ForgotPassword.update subMsg model
+                    Register.update subMsg subModel
             in
-            ForgotPassword newPage ! [ Cmd.map ForgotPasswordMsg cmd ]
+            ( Register newPage, Cmd.batch [ Cmd.map RegisterMsg cmd ] )
+
+        ( ForgotPasswordMsg subMsg, ForgotPassword subModel ) ->
+            let
+                ( newPage, cmd ) =
+                    ForgotPassword.update subMsg subModel
+            in
+            ( ForgotPassword newPage, Cmd.batch [ Cmd.map ForgotPasswordMsg cmd ] )
 
         ( _, _ ) ->
             -- Disregard incoming messages that arrived for the wrong page
-            page ! []
+            ( page, Cmd.none )
 
 
 updateAuthed : AuthedMessage -> AuthedPage -> ( AuthedPage, Cmd AuthedMessage )
@@ -854,8 +885,6 @@ view model =
         Authed page ->
             div [ class "authed-page" ]
                 [ TopNav.view model.flags AccountMenu.view
-
-                -- TODO: show loading if user data not available
                 , Html.map AuthedMsg <|
                     viewAuthedPage page model.activeRoute model.app <|
                         Maybe.withDefault User.initialModel model.user
@@ -888,26 +917,26 @@ viewAuthedPage page activeRoute app user =
             Html.map DashMsg <| viewDashboardPage page
 
         AppManagement appId page ->
-            -- TODO: "app wrapper", loading, convert Maybe App to App
-            viewAppWrapper page activeRoute app appId
+            case app of
+                Just app ->
+                    let
+                        ( _, activeRouteName ) =
+                            Route.linkTo activeRoute
+                    in
+                    Corral.appAdmin activeRouteName appId <|
+                        Html.map AppMsg <|
+                            viewAppPage page app
+
+                Nothing ->
+                    -- TODO: Put loading page here
+                    div [] [ text "Loading..." ]
 
         TeamManagement teamId page ->
             let
                 ( _, activeRouteName ) =
                     Route.linkTo activeRoute
             in
-            Corral.view "Team Admin"
-                activeRouteName
-                [ Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamInfo)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamSupport)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamBilling)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamPlan)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamMembers)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamAppGroups)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamHosting)
-                , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamDelete)
-                ]
-            <|
+            Corral.teamAdmin activeRouteName teamId <|
                 Html.map TeamMsg <|
                     viewTeamPage page
 
@@ -916,45 +945,9 @@ viewAuthedPage page activeRoute app user =
                 ( _, activeRouteName ) =
                     Route.linkTo activeRoute
             in
-            Corral.view "Account Admin"
-                activeRouteName
-                [ Route.linkTo (Route.Authed <| Route.User <| Route.UserInfo)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserSupport)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserBilling)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserPlan)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserHosting)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserTeams)
-                , Route.linkTo (Route.Authed <| Route.User <| Route.UserDelete)
-                ]
-            <|
+            Corral.userAdmin activeRouteName <|
                 Html.map UserMsg <|
                     viewUserPage page user
-
-
-viewAppWrapper : AppPage -> Route -> Maybe App -> App.Id -> Html AuthedMessage
-viewAppWrapper page activeRoute maybeApp appId =
-    case maybeApp of
-        Just app ->
-            let
-                ( _, activeRouteName ) =
-                    Route.linkTo activeRoute
-            in
-            Corral.view "Manage App"
-                activeRouteName
-                [ Route.linkTo (Route.Authed <| Route.App appId <| Route.AppInfo)
-                , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppOwnership)
-                , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppDeploy)
-                , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppUpdate)
-                , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppSecurity)
-                , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppDelete)
-                ]
-            <|
-                Html.map AppMsg <|
-                    viewAppPage page app
-
-        Nothing ->
-            -- TODO: Put loading page here
-            div [] [ text "Loading..." ]
 
 
 viewDashboardPage : DashboardPage -> Html DashMessage

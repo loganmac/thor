@@ -1,7 +1,10 @@
 module View.Corral exposing (..)
 
+import Data.App
+import Data.Team
 import Html exposing (Attribute, Html, a, div, text)
 import Html.Attributes exposing (class, classList)
+import Route
 import Util exposing ((=>))
 
 
@@ -18,6 +21,51 @@ type alias Title =
 
 type alias Text =
     String
+
+
+appAdmin : ActiveRoute -> Data.App.Id -> Html msg -> Html msg
+appAdmin activeRouteName appId inner =
+    view "Manage App"
+        activeRouteName
+        [ Route.linkTo (Route.Authed <| Route.App appId <| Route.AppInfo)
+        , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppOwnership)
+        , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppDeploy)
+        , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppUpdate)
+        , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppSecurity)
+        , Route.linkTo (Route.Authed <| Route.App appId <| Route.AppDelete)
+        ]
+        inner
+
+
+teamAdmin : ActiveRoute -> Data.Team.Id -> Html msg -> Html msg
+teamAdmin activeRouteName teamId inner =
+    view "Team Admin"
+        activeRouteName
+        [ Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamInfo)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamSupport)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamBilling)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamPlan)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamMembers)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamAppGroups)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamHosting)
+        , Route.linkTo (Route.Authed <| Route.Team teamId <| Route.TeamDelete)
+        ]
+        inner
+
+
+userAdmin : ActiveRoute -> Html msg -> Html msg
+userAdmin activeRouteName inner =
+    view "Account Admin"
+        activeRouteName
+        [ Route.linkTo (Route.Authed <| Route.User <| Route.UserInfo)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserSupport)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserBilling)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserPlan)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserHosting)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserTeams)
+        , Route.linkTo (Route.Authed <| Route.User <| Route.UserDelete)
+        ]
+        inner
 
 
 

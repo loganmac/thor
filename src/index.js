@@ -5,16 +5,27 @@ import logoPath from './svg/logo.svg'
 import homeLogoPath from './svg/home.svg'
 import supportLogoPath from './svg/support.svg'
 
-console.log(logoPath)
 
 const app = Main.embed(document.getElementById('root'),
   // FLAGS
   {
+    "session": localStorage.session || null,
     "logoPath": logoPath,
     "homeLogoPath": homeLogoPath,
-    "supportLogoPath": supportLogoPath,
+    "supportLogoPath": supportLogoPath
   }
 );
+
+app.ports.storeSession.subscribe(function(session) {
+  localStorage.session = session;
+});
+
+window.addEventListener("storage", function(event) {
+  if (event.storageArea === localStorage && event.key === "session") {
+    app.ports.onSessionChange.send(event.newValue);
+  }
+}, false);
+
 
 // PORTS
 app.ports.measureContent.subscribe(function(msg) {
@@ -35,8 +46,8 @@ app.ports.measureContent.subscribe(function(msg) {
     } else {
       msg.oldHeight = 0;
     }
-    app.ports.newContentHeight.send(msg)
-  })
-})
+    app.ports.newContentHeight.send(msg);
+  });
+});
 
 registerServiceWorker();

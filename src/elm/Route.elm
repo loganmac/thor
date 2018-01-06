@@ -20,6 +20,7 @@ type alias RouteUrl =
 type Route
     = Unauthed UnauthedRoute
     | Authed AuthedRoute
+    | LogOut
 
 
 type UnauthedRoute
@@ -79,12 +80,18 @@ type UserRoute
     | UserDelete
 
 
+home : Route
+home =
+    Authed (Dash Dashboard)
+
+
 routes : Url.Parser (Route -> a) a
 routes =
     Url.oneOf
         -- Top level routes
         [ Url.map Unauthed <| unauthedRoutes
         , Url.map Authed <| authedRoutes
+        , Url.map LogOut <| Url.s "logout"
         ]
 
 
@@ -174,6 +181,9 @@ routeToLink route =
 
                 Authed subRoute ->
                     authedToLink subRoute
+
+                LogOut ->
+                    ( [ "logout" ], "Log Out" )
     in
     "#/" ++ String.join "/" pieces => name
 

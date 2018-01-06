@@ -1,9 +1,10 @@
 port module Port exposing (..)
 
+import Json.Encode exposing (Value)
+
+
 {-| measureContent the change animation of a flexWrapper
 -}
-
-
 port measureContent :
     { containerId : String
     , contentId : String
@@ -25,3 +26,13 @@ port newContentHeight :
      -> msg
     )
     -> Sub msg
+
+
+{-| sends a session out to be stored in localStorage
+-}
+port storeSession : Maybe String -> Cmd msg
+
+
+{-| get a message that localStorage.session has changed
+-}
+port onSessionChange : (Value -> msg) -> Sub msg

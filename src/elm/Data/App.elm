@@ -1,7 +1,9 @@
 module Data.App exposing (..)
 
+import Data.AuthToken as AuthToken
 import Data.Helpers exposing (apiUrl)
 import Http
+import HttpBuilder
 import Json.Decode as Decode exposing (Decoder, nullable)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 import UrlParser
@@ -85,6 +87,11 @@ appUrl appId =
     apiUrl <| "apps/" ++ appId
 
 
-getApp : String -> (Result Http.Error App -> msg) -> Cmd msg
-getApp appId msg =
-    Http.send msg <| Http.get (appUrl appId) decoder
+getApp : String -> Maybe AuthToken.AuthToken -> (Result Http.Error App -> msg) -> Cmd msg
+getApp appId authToken msg =
+    appUrl appId
+        |> HttpBuilder.get
+        |> AuthToken.withAuthorization authToken
+        |> HttpBuilder.withExpect (Http.expectJson decoder)
+        |> HttpBuilder.toRequest
+        |> Http.send msg
