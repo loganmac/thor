@@ -1,7 +1,7 @@
 module Data.User exposing (..)
 
 import Data.AuthToken as AuthToken exposing (AuthToken(..))
-import Data.Helpers exposing (apiPost, apiUrl)
+import Data.Helpers exposing (apiUrl)
 import Http
 import Json.Decode as Decode exposing (Decoder, Value, nullable)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required)

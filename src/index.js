@@ -1,9 +1,11 @@
 import './scss/main.scss';
 import { Main } from './elm/Main.elm';
 import registerServiceWorker from './js/registerServiceWorker';
-import logoPath from './svg/logo.svg'
-import homeLogoPath from './svg/home.svg'
-import supportLogoPath from './svg/support.svg'
+import logoPath from './svg/logo.svg';
+import homeLogoPath from './svg/home.svg';
+import supportLogoPath from './svg/support.svg';
+import legacyProviderManager from './js/legacy/providerManager';
+import providerManager from './js/providerManager';
 
 
 const app = Main.embed(document.getElementById('root'),
@@ -16,6 +18,10 @@ const app = Main.embed(document.getElementById('root'),
   }
 );
 
+// PORTS
+
+
+// SESSION MANAGMENT
 app.ports.storeSession.subscribe(function(session) {
   localStorage.session = session;
 });
@@ -27,7 +33,17 @@ window.addEventListener("storage", function(event) {
 }, false);
 
 
-// PORTS
+// PROVIDER MANAGER
+const deleteAccount = function(data, cb) {
+  // register callback somewhere, get the requestId
+  app.ports.deleteAccount.send({
+    requestId: requestId,
+    accountId: data.accountId,
+    providerId: data.providerId
+  })
+}
+
+// DYNAMIC CONTAINER
 app.ports.measureContent.subscribe(function(msg) {
   window.requestAnimationFrame(function() {
     let containerId = msg.containerId;

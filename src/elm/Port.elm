@@ -36,3 +36,29 @@ port storeSession : Maybe String -> Cmd msg
 {-| get a message that localStorage.session has changed
 -}
 port onSessionChange : (Value -> msg) -> Sub msg
+
+
+
+-- PROVIDER ACCOUNTS
+
+
+{-| delete acccount
+-}
+port deleteAccount :
+    ({ requestId : String
+     , accountId : String
+     , providerId : String
+     }
+     -> msg
+    )
+    -> Sub msg
+
+
+{-| response from deleteAccount
+-}
+port accountDeleted :
+    { requestId : String
+    , success : Bool
+    , error : Maybe String
+    }
+    -> Cmd msg

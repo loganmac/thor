@@ -500,7 +500,7 @@ update msg model =
         ( AuthedMsg subMsg, Authed page ) ->
             let
                 ( newPage, cmd ) =
-                    updateAuthed subMsg page
+                    updateAuthed subMsg page (Maybe.withDefault User.initialModel model.user)
             in
             { model | page = Authed newPage } ! [ Cmd.map AuthedMsg cmd ]
 
@@ -546,8 +546,8 @@ updateUnauthed msg page =
             ( page, Cmd.none )
 
 
-updateAuthed : AuthedMessage -> AuthedPage -> ( AuthedPage, Cmd AuthedMessage )
-updateAuthed msg page =
+updateAuthed : AuthedMessage -> AuthedPage -> User -> ( AuthedPage, Cmd AuthedMessage )
+updateAuthed msg page user =
     -- page ! []
     case ( msg, page ) of
         ( DashMsg subMsg, DashPage subPage ) ->
@@ -574,7 +574,7 @@ updateAuthed msg page =
         ( UserMsg subMsg, UserManagement subPage ) ->
             let
                 ( newPage, cmd ) =
-                    updateUser subMsg subPage
+                    updateUser subMsg subPage user
             in
             UserManagement newPage ! [ Cmd.map UserMsg cmd ]
 
@@ -775,8 +775,8 @@ updateTeam msg page =
             page ! []
 
 
-updateUser : UserMessage -> UserPage -> ( UserPage, Cmd UserMessage )
-updateUser msg page =
+updateUser : UserMessage -> UserPage -> User -> ( UserPage, Cmd UserMessage )
+updateUser msg page user =
     case ( msg, page ) of
         ( UserInfoMsg subMsg, UserInfo subModel ) ->
             let
@@ -809,7 +809,7 @@ updateUser msg page =
         ( UserHostingMsg subMsg, UserHosting subModel ) ->
             let
                 ( newPage, cmd ) =
-                    UserHosting.update subMsg subModel
+                    UserHosting.update subMsg subModel user.authToken
             in
             UserHosting newPage ! [ Cmd.map UserHostingMsg cmd ]
 
@@ -856,6 +856,9 @@ authedSubscriptions page =
             -- TODO: app-level subscription
             Sub.map AppMsg <| appSubscriptions page
 
+        UserManagement page ->
+            Sub.map UserMsg <| userSubscriptions page
+
         _ ->
             Sub.none
 
@@ -865,6 +868,16 @@ appSubscriptions page =
     case page of
         AppDash model ->
             Sub.map AppDashMsg <| AppDash.subscriptions model
+
+        _ ->
+            Sub.none
+
+
+userSubscriptions : UserPage -> Sub UserMessage
+userSubscriptions page =
+    case page of
+        UserHosting model ->
+            Sub.map UserHostingMsg <| UserHosting.subscriptions model
 
         _ ->
             Sub.none
