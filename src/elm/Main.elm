@@ -4,7 +4,7 @@ import Data.App as App exposing (App)
 import Data.Team as Team
 import Data.User as User exposing (User)
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Http
 import Json.Decode
 import Navigation exposing (Location)
@@ -264,7 +264,11 @@ routeDash route model =
             Download {} ! []
 
         Route.NewApp ->
-            NewApp {} ! []
+            let
+                ( newApp, cmd ) =
+                    NewApp.init
+            in
+            NewApp newApp ! [ Cmd.map NewAppMsg cmd ]
 
 
 routeApp : Route.AppRoute -> Model -> ( AppPage, Cmd AppMessage )
@@ -896,7 +900,7 @@ view model =
                 ]
 
         Authed page ->
-            div [ class "authed-page" ]
+            div [ class "authed-page", id "authedPage" ]
                 [ TopNav.view model.flags AccountMenu.view
                 , Html.map AuthedMsg <|
                     viewAuthedPage page model.activeRoute model.app <|

@@ -39,6 +39,28 @@ port onSessionChange : (Value -> msg) -> Sub msg
 
 
 
+-- LEGACY
+-- new app
+
+
+{-| instantiate new_app component
+-}
+port newApp :
+    { node : String
+    , route : String
+    , newAppUrl : String
+    , validateAppUrl : String
+    , providersMetaUrl : String
+    , createProviderAccountUrl : String
+    , verifyProviderAccountUrl : String
+    , providersWithAccounts : List String
+    , officialProviders : List String
+    , customProviders : List String
+    }
+    -> Cmd msg
+
+
+
 -- PROVIDER ACCOUNTS
 
 

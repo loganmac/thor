@@ -20,3 +20,18 @@ deleteProvider providerId token =
         |> HttpBuilder.delete
         |> AuthToken.withAuthorization token
         |> HttpBuilder.toRequest
+
+
+providersMetaUrl : String
+providersMetaUrl =
+    apiUrl "providers/meta"
+
+
+providerAccountsUrl : String
+providerAccountsUrl =
+    apiUrl "provider_accounts"
+
+
+verifyProviderAccountsUrl : String
+verifyProviderAccountsUrl =
+    apiUrl "provider_accounts/verify"

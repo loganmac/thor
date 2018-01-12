@@ -4,9 +4,21 @@ import registerServiceWorker from './js/registerServiceWorker';
 import logoPath from './svg/logo.svg';
 import homeLogoPath from './svg/home.svg';
 import supportLogoPath from './svg/support.svg';
-import legacyProviderManager from './js/legacy/providerManager';
-import providerManager from './js/providerManager';
+// LEGACY
+// new app
+import './scss/legacy.scss'
+import './legacy/new_app/legacy';
+import newApp from './legacy/newApp';
+// globals for new app
+import 'script-loader!jquery';
+import 'script-loader!./legacy/new_app/legacy.js';
+import 'script-loader!shadow-icons/rel/app';
+import 'script-loader!@nanobox/project/rel/app'; //sequin
+import 'script-loader!jade/runtime';
+import 'script-loader!lexi/rel/app';
 
+import './legacy/provider_manager/legacy';
+import providerManager from './legacy/providerManager';
 
 const app = Main.embed(document.getElementById('root'),
   // FLAGS
@@ -20,7 +32,6 @@ const app = Main.embed(document.getElementById('root'),
 
 // PORTS
 
-
 // SESSION MANAGMENT
 app.ports.storeSession.subscribe(function(session) {
   localStorage.session = session;
@@ -32,16 +43,6 @@ window.addEventListener("storage", function(event) {
   }
 }, false);
 
-
-// PROVIDER MANAGER
-const deleteAccount = function(data, cb) {
-  // register callback somewhere, get the requestId
-  app.ports.deleteAccount.send({
-    requestId: requestId,
-    accountId: data.accountId,
-    providerId: data.providerId
-  })
-}
 
 // DYNAMIC CONTAINER
 app.ports.measureContent.subscribe(function(msg) {
@@ -65,5 +66,18 @@ app.ports.measureContent.subscribe(function(msg) {
     app.ports.newContentHeight.send(msg);
   });
 });
+
+
+// LEGACY
+
+app.ports.newApp.subscribe(function(msg){
+  console.log(msg);
+  newApp(msg);
+})
+
+
+
+
+// PROGRESSIVE WEB APP SERVICE WORKER
 
 registerServiceWorker();

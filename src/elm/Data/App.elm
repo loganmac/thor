@@ -95,3 +95,17 @@ getApp appId authToken msg =
         |> HttpBuilder.withExpect (Http.expectJson decoder)
         |> HttpBuilder.toRequest
         |> Http.send msg
+
+
+
+-- POST
+
+
+newAppUrl : String
+newAppUrl =
+    apiUrl "apps"
+
+
+validateUrl : String
+validateUrl =
+    apiUrl "apps/validate_name"

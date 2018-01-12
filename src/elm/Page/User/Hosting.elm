@@ -52,6 +52,7 @@ subscriptions model =
 
 type Msg
     = DeleteAccount AccountRequest
+      -- | UpdateProvider UpdateRequest
     | DeleteAccountResponse RequestId ProviderId (Result Http.Error ())
     | DeleteProviderResponse RequestId (Result Http.Error ())
 

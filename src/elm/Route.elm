@@ -85,6 +85,11 @@ home =
     Authed (Dash Dashboard)
 
 
+newApp : Route
+newApp =
+    Authed (Dash NewApp)
+
+
 routes : Url.Parser (Route -> a) a
 routes =
     Url.oneOf
