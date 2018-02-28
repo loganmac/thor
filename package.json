@@ -6,12 +6,12 @@
   "author": "Logan McPhail <logan.airnomad@gmail.com>",
   "license": "MIT",
   "private": true,
-  "devDependencies": {
-    "@nanobox/project": "github:tolmark12/sequin",
+  "dependencies": {
     "jade": "~1.6.0",
     "jquery": "^3.2.1",
     "lexi": "github:nanobox-io/lexi",
     "script-loader": "^0.7.2",
+    "sequin": "github:loganmac/sequin",
     "shadow-icons": "github:tolmark12/shadow-icons-js",
     "velocity-animate": "~1.1.0"
   }

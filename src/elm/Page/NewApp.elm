@@ -18,7 +18,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    {} ! [ Util.wait 0.5 LoadNewApp ]
+    {} ! [ Util.wait 0.1 LoadNewApp ]
 
 
 
@@ -43,13 +43,13 @@ update msg model =
     case msg of
         LoadNewApp ->
             let
-                ( newAppRoute, _ ) =
-                    Route.routeToLink Route.newApp
+                ( route, _ ) =
+                    Route.routeToLink Route.home
             in
             model
                 ! [ Port.newApp
-                        { node = "#newApp"
-                        , route = newAppRoute
+                        { node = "#appLaunch"
+                        , route = route
                         , newAppUrl = App.newAppUrl
                         , validateAppUrl = App.validateUrl
                         , providersMetaUrl = Hosting.providersMetaUrl
@@ -68,4 +68,6 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "new-app", id "newApp" ] []
+    div [ class "new-app" ]
+        [ div [ class "app-launch", id "appLaunch" ] []
+        ]

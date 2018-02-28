@@ -10,12 +10,12 @@ import './scss/legacy.scss'
 import './legacy/new_app/legacy';
 import newApp from './legacy/newApp';
 // globals for new app
+import 'sequin';
 import 'script-loader!jquery';
+import 'script-loader!lexi/rel/app';
 import 'script-loader!./legacy/new_app/legacy.js';
 import 'script-loader!shadow-icons/rel/app';
-import 'script-loader!@nanobox/project/rel/app'; //sequin
 import 'script-loader!jade/runtime';
-import 'script-loader!lexi/rel/app';
 
 import './legacy/provider_manager/legacy';
 import providerManager from './legacy/providerManager';

@@ -2,9 +2,8 @@ module Page.Dashboard exposing (..)
 
 -- TODO: not implemented.
 
-import Html exposing (Html, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
-import Util exposing ((=>))
 
 
 -- MODEL
@@ -49,4 +48,4 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "dashboard" ] []
+    div [ class "dashboard" ] [ text "hello!" ]
