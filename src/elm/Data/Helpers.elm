@@ -3,4 +3,4 @@ module Data.Helpers exposing (..)
 
 apiUrl : String -> String
 apiUrl str =
-    "https://api.jedgalbraith.com/v2/" ++ str
+    "https://api.nanobox.io/v2/" ++ str
